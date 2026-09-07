@@ -512,6 +512,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("Catalog row is not live", html)
         self.assertIn("Docker Hub pipe is not public", html)
         self.assertIn("MoleCare and this account", html)
+        self.assertIn("build:</code> maps to tests", html)
         self.assertNotIn("pinned to <code>@v1.6.0</code>.", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)

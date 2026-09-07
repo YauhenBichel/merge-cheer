@@ -382,8 +382,8 @@ python3 scripts/make_gifs.py
 ```
 
 Writes `gifs/<group>/<name>.gif`. Keep each file under 180 KB. A group
-may hold several files; `alt.gif` is the same still with the camera
-move inverted. Mood groups (`party`, `space`, `magic`, `coffee`, `robot`, `comic`,
+may hold several files; `alt.gif` is the same still with the pulse
+inverted. Mood groups (`party`, `space`, `magic`, `coffee`, `robot`, `comic`,
 `sunny`, `game`, `sticker`, `yeah`) each ship two original stills.
 
 ## License

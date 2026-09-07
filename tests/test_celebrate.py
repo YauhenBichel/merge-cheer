@@ -371,6 +371,8 @@ class CelebrateTest(unittest.TestCase):
 
     def test_action_never_checkouts_the_pull_request(self) -> None:
         text = ACTION.read_text(encoding="utf-8")
+        script = (ROOT / "src" / "celebrate.py").read_text(encoding="utf-8")
+        security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
         self.assertNotIn("actions/checkout", text)
         self.assertIn("PR_TITLE: ${{ github.event.pull_request.title }}", text)
         self.assertIn("PR_BODY: ${{ github.event.pull_request.body }}", text)
@@ -380,6 +382,15 @@ class CelebrateTest(unittest.TestCase):
         self.assertNotIn(
             "${{ github.event.pull_request.title }}\n      run:",
             text,
+        )
+        self.assertNotIn("subprocess", script)
+        self.assertNotIn("checkout", script)
+        self.assertNotIn("git clone", script)
+        self.assertIn("security/advisories/new", security)
+        self.assertIn("private", security.lower())
+        self.assertNotIn(
+            "Open a **public** GitHub issue on this repo.",
+            security,
         )
 
     def test_action_documents_every_group(self) -> None:
@@ -396,6 +407,8 @@ class CelebrateTest(unittest.TestCase):
         text = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
         self.assertNotIn("issues/1", text)
         self.assertNotIn("issues/4", text)
+        self.assertIn("open an issue", text)
+        self.assertIn("private vulnerability reporting", text)
         for group in celebrate.GROUPS:
             self.assertIn(f"`{group}`", text)
 
@@ -430,6 +443,10 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("reviewers", text)
         self.assertIn("closed or change-requested MR", text)
         self.assertIn("declined or change-requested PR", text)
+        self.assertIn("Catalog row is not live", text)
+        self.assertIn("Docker Hub pipe is not public", text)
+        self.assertNotIn("No merge comment exists yet", text)
+        self.assertIn("MoleCare and this account", text)
         self.assertIn(".github/workflows/celebrate.yml", text)
         dogfood = (ROOT / ".github" / "workflows" / "celebrate.yml").read_text(
             encoding="utf-8"
@@ -465,6 +482,10 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("closed without merge, or changes requested when the job can see that request", html)
         self.assertIn("closed or change-requested MR", html)
         self.assertIn("declined or change-requested PR", html)
+        self.assertIn("Catalog row is not live", html)
+        self.assertIn("Docker Hub pipe is not public", html)
+        self.assertIn("MoleCare and this account", html)
+        self.assertNotIn("pinned to <code>@v1.6.0</code>.", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)
@@ -693,7 +714,12 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("celebrate.py", component)
         self.assertIn("release:", gitlab_ci)
         self.assertIn("python3 -m unittest discover -s tests -q", gitlab_ci)
-        self.assertIn("eugenebichel/merge-cheer:1.5.0", pipe)
+        self.assertIn("eugenebichel/merge-cheer:1.6.0", pipe)
+        self.assertIn("ACTION_REF: v1.6.0", example_gl)
+        self.assertIn("ACTION_REF=v1.6.0", example_bb)
+        more = (ROOT / "examples" / "celebrate-more.yml").read_text(encoding="utf-8")
+        self.assertIn("YauhenBichel/merge-cheer@v1.6.0", more)
+        self.assertNotIn("@v1.5.0", more)
         self.assertIn("BITBUCKET_ACCESS_TOKEN", pipe)
         self.assertIn("src/celebrate.py", dockerfile)
         self.assertIn("CI/CD Catalog", markets)

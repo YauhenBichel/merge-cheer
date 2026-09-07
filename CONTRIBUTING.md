@@ -35,10 +35,13 @@ Each GIF must stay under 180 KB. The test suite fails if one grows.
 
 ## What a good first change looks like
 
-Start at [`good first issue`](https://github.com/YauhenBichel/merge-cheer/labels/good%20first%20issue)
-when that label has an open issue. Locale, Marketplace screenshot,
-first-timer welcome, a third comic GIF, and the title-keyword /
-skip / co-author work already landed.
+If [`good first issue`](https://github.com/YauhenBichel/merge-cheer/labels/good%20first%20issue)
+has an open issue, start there. The label is often empty — pick from
+the list below and [open an issue](https://github.com/YauhenBichel/merge-cheer/issues/new)
+first so two people do not take the same change.
+
+Locale, Marketplace screenshot, first-timer welcome, a third comic
+GIF, and the title-keyword / skip / co-author work already landed.
 
 A good first change is one of:
 
@@ -75,8 +78,8 @@ of your own repository.
 
 ## Reporting security issues
 
-Open a **public** GitHub issue. See [SECURITY.md](./SECURITY.md).
-Do not paste live keys.
+Use GitHub private vulnerability reporting. See [SECURITY.md](./SECURITY.md).
+Do not paste live keys. Do not open a public issue for a working exploit.
 
 ## Licence
 

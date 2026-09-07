@@ -2,7 +2,7 @@
 # a catalog release, switch the include to that catalog path@version.
 #
 # include:
-#   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.5.0
+#   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.6.0
 #     inputs:
 #       topic: auto
 #       token: $GITLAB_TOKEN
@@ -14,7 +14,7 @@ celebrate:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
   variables:
     TOPIC: auto
-    ACTION_REF: v1.5.0
+    ACTION_REF: v1.6.0
     ACTION_REPO: YauhenBichel/merge-cheer
   script:
     - apk add --no-cache curl

@@ -10,7 +10,7 @@ spec:
       default: en
       description: Default thank-you language. en, es, de, fr, pt, uk. Unknown codes fall back to English.
     action_ref:
-      default: v1.5.0
+      default: v1.6.0
       description: merge-cheer tag used to download celebrate.py and GIF URLs.
     token:
       default: $GITLAB_TOKEN

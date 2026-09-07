@@ -117,9 +117,10 @@ checks out the pull request head. The full case list is on the
 
 ### GitLab
 
+The Catalog row is not live. Copy the curl job.
+
 1. Copy [examples/gitlab-ci.yml](examples/gitlab-ci.yml) onto the default
-   branch, or include the Catalog component after you publish one
-   ([MARKETPLACES.md](MARKETPLACES.md)).
+   branch.
 2. Add a project access token `GITLAB_TOKEN` with `api` scope.
    `CI_JOB_TOKEN` cannot post merge-request notes.
 3. Merge to the default branch. The job finds that MR and comments the
@@ -127,17 +128,23 @@ checks out the pull request head. The full case list is on the
    moments instead.
 
 ```yaml
-include:
-  - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.6.0
-    inputs:
-      topic: auto
-      token: $GITLAB_TOKEN
+celebrate:
+  image: python:3.13-alpine
+  variables:
+    TOPIC: auto
+    ACTION_REF: v1.6.0
+    ACTION_REPO: YauhenBichel/merge-cheer
+  script:
+    - apk add --no-cache curl
+    - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o /tmp/celebrate.py
+    - python3 /tmp/celebrate.py
 ```
 
-Until the Catalog row exists, the curl job in
-`examples/gitlab-ci.yml` is the working path.
+How to publish a Catalog row later: [MARKETPLACES.md](MARKETPLACES.md).
 
 ### Bitbucket
+
+The Docker Hub pipe is not public. Copy the curl job.
 
 1. Copy [examples/bitbucket-pipelines.yml](examples/bitbucket-pipelines.yml)
    onto `main` (or `master`).
@@ -149,15 +156,14 @@ Until the Catalog row exists, the curl job in
 
 ```yaml
 script:
-  - pipe: docker://eugenebichel/merge-cheer:1.5.0
-    variables:
-      TOPIC: auto
-      BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+  - export ACTION_REF=v1.6.0
+  - export ACTION_REPO=YauhenBichel/merge-cheer
+  - export TOPIC="${TOPIC:-auto}"
+  - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
+  - python3 celebrate.py
 ```
 
-Until `eugenebichel/merge-cheer:1.5.0` is on Docker Hub, use the curl
-job in the example. A Pipes UI listing needs an Atlassian review —
-[MARKETPLACES.md](MARKETPLACES.md).
+How to publish a Hub image and Pipes row later: [MARKETPLACES.md](MARKETPLACES.md).
 
 Pin a group:
 
@@ -231,14 +237,18 @@ see it move).
 | --- | --- | --- | --- |
 | ![java](gifs/java/mug.gif) | ![python](gifs/python/snake.gif) | ![cpp](gifs/cpp/plus.gif) | ![golang](gifs/golang/gopher.gif) |
 
-The in-the-wild demo is the next merged pull request on this
-repository: [.github/workflows/celebrate.yml](.github/workflows/celebrate.yml)
-runs `uses: ./` and comments one of these GIFs. No merge comment exists
-yet — that workflow is what will write it.
+This repository dogfoods
+[.github/workflows/celebrate.yml](.github/workflows/celebrate.yml)
+(`uses: ./`). Live comments already landed on
+[merge-cheer #53](https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316),
+[py-harness #350](https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736),
+and
+[molecare-desktop #26](https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123).
 
 ## Used by
 
-8 public repositories already run Merge Cheer on the default branch.
+8 public repositories in MoleCare and this account already run Merge
+Cheer on the default branch.
 
 **MoleCare:** [molecare-mcp](https://github.com/MoleCare/molecare-mcp),
 [molecare-ml](https://github.com/MoleCare/molecare-ml),
@@ -358,8 +368,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Please follow the
 [Code of Conduct](CODE_OF_CONDUCT.md).
 
 A good first change is another GIF in an existing group folder, or a
-title keyword for a group, plus a test. Open issues:
-[`good first issue`](https://github.com/YauhenBichel/merge-cheer/labels/good%20first%20issue).
+title keyword for a group, plus a test. If
+[`good first issue`](https://github.com/YauhenBichel/merge-cheer/labels/good%20first%20issue)
+is empty, open an issue first — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 python3 -m unittest discover -s tests -q

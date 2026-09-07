@@ -22,7 +22,7 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.5.0
+      - uses: YauhenBichel/merge-cheer@v1.6.0
         with:
           # closed-topic: coffee
           # changes-topic: yeah

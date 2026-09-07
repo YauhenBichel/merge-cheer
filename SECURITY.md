@@ -12,7 +12,12 @@ secrets. The Action therefore:
 
 ## Reporting a vulnerability
 
-Open a **public** GitHub issue on this repo. Label it `security` if you can.
+Use GitHub **private** vulnerability reporting:
+
+https://github.com/YauhenBichel/merge-cheer/security/advisories/new
+
+This Action is meant to run on `pull_request_target` with repository
+secrets in scope. Do not open a public issue for a working exploit.
 
 Include:
 
@@ -20,8 +25,12 @@ Include:
 - how to reproduce it
 - what an attacker could do with it
 
-Do **not** paste live API keys, tokens, or `.env` contents into the issue.
-Redact secrets and describe them instead.
+Do **not** paste live API keys, tokens, or `.env` contents. Redact
+secrets and describe them instead.
+
+Open a public issue only if the private form is unavailable, and only
+for a report that is not a working exploit. Label it `security` if you
+can.
 
 ## Scope
 

@@ -42,13 +42,13 @@ that catalog via API.
 
 ### Publish a Catalog version
 
-Push or mirror semver tag `v1.5.0`. `.gitlab-ci.yml` runs tests, then a
+Push or mirror semver tag `v1.6.0`. `.gitlab-ci.yml` runs tests, then a
 `release:` job. **GitLab only indexes versions created with that
 keyword** (not the Releases REST API alone).
 
 ```yaml
 include:
-  - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.5.0
+  - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.6.0
     inputs:
       topic: auto
       token: $GITLAB_TOKEN
@@ -68,7 +68,7 @@ A usable pipe needs a **public Docker image**. The UI catalog is separate.
 2. Add GitHub Actions secrets:
    - `DOCKERHUB_USERNAME` — Hub **username** (not email)
    - `DOCKERHUB_TOKEN` — Hub **Access Token** (Read & Write), no newline
-3. Run Actions → **Release** with version `v1.5.0` (docker job pushes),
+3. Run Actions → **Release** with version `v1.6.0` (docker job pushes),
    or Actions → **Publish Docker** for a retry.
 4. Keep `pipe.yml` pointing at that image (tag without the leading `v`).
 
@@ -78,7 +78,7 @@ Store `BITBUCKET_ACCESS_TOKEN` on the consumer repo (pullrequest write):
 
 ```yaml
 script:
-  - pipe: docker://eugenebichel/merge-cheer:1.5.0
+  - pipe: docker://eugenebichel/merge-cheer:1.6.0
     variables:
       TOPIC: auto
       BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN

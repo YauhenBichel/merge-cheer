@@ -425,6 +425,87 @@ def bundled_url(action_repo: str, action_ref: str, group: str, name: str) -> str
     )
 
 
+_IMAGE_SUFFIXES = (".gif", ".webp", ".png")
+_GIFS_PATH = re.compile(r"^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$")
+
+
+def gifs_path_ok(path: str) -> bool:
+    raw = (path or "").strip().strip("/")
+    if not raw or ".." in raw.split("/"):
+        return False
+    return bool(_GIFS_PATH.fullmatch(raw))
+
+
+def is_safe_gif_url(url: str) -> bool:
+    raw = (url or "").strip()
+    if not raw or not is_grated(raw):
+        return False
+    parsed = urllib.parse.urlparse(raw)
+    if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
+        return False
+    host = parsed.hostname or ""
+    if host in {"localhost", "127.0.0.1", "::1"} or host.endswith(".localhost"):
+        return False
+    path = (parsed.path or "").lower()
+    return any(path.endswith(suffix) for suffix in _IMAGE_SUFFIXES)
+
+
+def parse_custom_gifs(raw: str) -> list[str]:
+    found: list[str] = []
+    seen: set[str] = set()
+    for part in re.split(r"[\s,]+", raw or ""):
+        url = part.strip()
+        if not url or url in seen:
+            continue
+        if not is_safe_gif_url(url):
+            print(f"custom gif skipped: {url}", file=sys.stderr)
+            continue
+        seen.add(url)
+        found.append(url)
+    return found
+
+
+def pick_custom_gif(urls: list[str], seed: str) -> str:
+    if not urls:
+        return ""
+    return urls[random.Random(seed).randrange(len(urls))]
+
+
+def list_repo_gif_urls(token: str, repo: str, path: str, ref: str = "") -> list[str]:
+    """List image files in a folder on this repository. No pull-request head."""
+    folder = (path or "").strip().strip("/")
+    if not token or not repo or not gifs_path_ok(folder):
+        return []
+    api = (
+        f"https://api.github.com/repos/{repo}/contents/"
+        f"{urllib.parse.quote(folder)}"
+    )
+    if (ref or "").strip():
+        api += f"?ref={urllib.parse.quote((ref or '').strip())}"
+    try:
+        data = _http_json(api, token, headers=_github_headers(token))
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"gifs-path skipped: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        return []
+    urls: list[str] = []
+    seen: set[str] = set()
+    for item in data:
+        if not isinstance(item, dict) or item.get("type") != "file":
+            continue
+        name = str(item.get("name") or "")
+        low = name.lower()
+        if not any(low.endswith(suffix) for suffix in _IMAGE_SUFFIXES):
+            continue
+        raw = str(item.get("download_url") or "").strip()
+        if raw in seen or not is_safe_gif_url(raw):
+            continue
+        seen.add(raw)
+        urls.append(raw)
+    return urls
+
+
 def giphy_url(key: str, tag: str, rating: str) -> str:
     if not key:
         return ""
@@ -523,6 +604,22 @@ def cheer_marker(moment: str = "merge") -> str:
     return f"<!-- merge-cheer:{name} -->"
 
 
+NOTE_MAX = 280
+
+
+def clean_note(raw: str) -> str:
+    """Optional extra line (Discord, docs). G-rated, short, or empty."""
+    text = re.sub(r"\s+", " ", (raw or "").strip())
+    if not text:
+        return ""
+    if not is_grated(text):
+        print("note skipped: unsafe", file=sys.stderr)
+        return ""
+    if len(text) > NOTE_MAX:
+        text = text[:NOTE_MAX].rstrip()
+    return text
+
+
 def comment_body(
     message: str,
     author: str,
@@ -532,6 +629,7 @@ def comment_body(
     association: str = "",
     locale: str = "",
     moment: str = "merge",
+    note: str = "",
 ) -> str:
     who = (author or "").lstrip("@")
     named = authors or (f"@{who}" if who else "")
@@ -551,6 +649,9 @@ def comment_body(
         )
         if not already:
             text += f"{line}\n"
+    extra = clean_note(note)
+    if extra:
+        text += f"{extra}\n"
     text = ensure_mention(text, who)
     if gif:
         src = html.escape(gif, quote=True)
@@ -1500,18 +1601,33 @@ def main() -> int:
             )
     root = action_root()
     group, name = choose_gif(root, group, number)
-    gif = giphy_url(
-        os.environ.get("GIPHY_API_KEY", "").strip(),
-        GIPHY_TAG[group],
-        os.environ.get("GIPHY_RATING", "g").strip() or "g",
-    )
+    gif = ""
+    if moment == "merge":
+        custom = parse_custom_gifs(os.environ.get("CUSTOM_GIFS", ""))
+        if not custom and host == "github":
+            custom = list_repo_gif_urls(
+                token,
+                repo,
+                os.environ.get("GIFS_PATH", ""),
+                os.environ.get("DEFAULT_BRANCH", ""),
+            )
+        if custom:
+            gif = pick_custom_gif(custom, number)
+            if gif:
+                print(f"custom gif: {gif}", file=sys.stderr)
     if not gif:
-        gif = bundled_url(
-            os.environ.get("ACTION_REPO", "").strip(),
-            os.environ.get("ACTION_REF", "main"),
-            group,
-            name,
+        gif = giphy_url(
+            os.environ.get("GIPHY_API_KEY", "").strip(),
+            GIPHY_TAG[group],
+            os.environ.get("GIPHY_RATING", "g").strip() or "g",
         )
+        if not gif:
+            gif = bundled_url(
+                os.environ.get("ACTION_REPO", "").strip(),
+                os.environ.get("ACTION_REF", "main"),
+                group,
+                name,
+            )
     label = LABEL[group]
     body = comment_body(
         message,
@@ -1522,6 +1638,7 @@ def main() -> int:
         association,
         os.environ.get("LOCALE", ""),
         moment,
+        os.environ.get("NOTE", ""),
     )
     write_output(
         os.environ.get("GITHUB_OUTPUT", ""),

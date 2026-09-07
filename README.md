@@ -55,6 +55,21 @@ jobs:
       - uses: YauhenBichel/merge-cheer@v1.7.0
 ```
 
+### Use your own GIFs and a note
+
+On merge, pin your GIFs. `note` is an extra line after the thank-you
+(Discord, docs) so locale and the model line still run. Copy
+[examples/celebrate-custom.yml](examples/celebrate-custom.yml). https
+URLs, G-rated, GIFs under 180 KB. The Action does not read pull
+request head.
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    gifs-path: .github/merge-cheer
+    note: "Come hang out on Discord — https://discord.gg/your-invite"
+```
+
 ### Use a model
 
 Zero-config stays `Merged — thank you @author`. Add repository secret
@@ -324,6 +339,9 @@ before `qa`. `feat: add python client` still ships.
 | `github-token` | `${{ github.token }}` | Posts the comment |
 | `topic` | `auto` | Group name, `auto` for a random theme, or `title` to pick from the PR title and body |
 | `giphy-api-key` | empty | Optional. When set, try a G-rated Giphy GIF first |
+| `gifs` | empty | Optional https image URLs (comma or newline). Merge only. One is picked, seeded by the pull request number |
+| `gifs-path` | empty | Optional folder on the default branch of `.gif` / `.webp` / `.png` files. Listed via the GitHub API |
+| `note` | empty | Optional extra line after the thank-you (Discord, docs). G-rated. Does not replace `message` |
 | `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds unique human co-authors and reviewers |
 | `locale` | `en` | Default thank-you and first-timer language (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja`). Unknown codes fall back to English. A pinned `message` wins |
 | `closed-topic` / `closed-message` | `coffee` / closed thanks | Used when a pull request closes without a merge |

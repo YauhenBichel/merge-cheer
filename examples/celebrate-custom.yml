@@ -1,0 +1,26 @@
+# Your own G-rated GIFs and an extra line (Discord, docs, …).
+# Keep each GIF under 180 KB. Closed and changes still use the
+# bundled topic groups unless you set note (note is on every moment).
+#
+# Drop files in .github/merge-cheer/ on the default branch, or pass
+# https URLs. The Action does not read pull request head.
+
+name: Celebrate merge
+on:
+  pull_request_target:
+    types: [closed]
+permissions:
+  pull-requests: write
+  contents: read
+jobs:
+  celebrate:
+    if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: YauhenBichel/merge-cheer@v1.7.0
+        with:
+          gifs-path: .github/merge-cheer
+          note: "Come hang out on Discord — https://discord.gg/your-invite"
+          # gifs: |
+          #   https://raw.githubusercontent.com/OWNER/REPO/main/.github/merge-cheer/ship.gif
+          #   https://raw.githubusercontent.com/OWNER/REPO/main/.github/merge-cheer/party.gif

@@ -335,6 +335,76 @@ class CelebrateTest(unittest.TestCase):
         self.assertNotIn("<!-- merge-cheer -->\n", body)
         self.assertNotIn("First contribution — welcome.", body)
 
+    def test_comment_appends_a_safe_note(self) -> None:
+        celebrate = _load()
+        body = celebrate.comment_body(
+            "Merged — thank you @{author}.",
+            "alice",
+            "ship it",
+            "https://example.test/ship/ship-it.gif",
+            note="Come hang out on Discord — https://discord.gg/your-invite",
+        )
+        self.assertIn("Merged — thank you @alice.", body)
+        self.assertIn("Come hang out on Discord — https://discord.gg/your-invite", body)
+        self.assertLess(
+            body.index("Merged — thank you @alice."),
+            body.index("Come hang out on Discord"),
+        )
+        self.assertLess(
+            body.index("Come hang out on Discord"),
+            body.index("<img "),
+        )
+        unsafe = celebrate.comment_body(
+            "Merged — thank you @{author}.",
+            "alice",
+            "ship it",
+            "https://example.test/ship/ship-it.gif",
+            note="nsfw party in Discord",
+        )
+        self.assertNotIn("nsfw", unsafe)
+        self.assertEqual(celebrate.clean_note(""), "")
+        self.assertEqual(
+            celebrate.clean_note("Join us\n\non Discord."),
+            "Join us on Discord.",
+        )
+
+    def test_custom_gifs_are_https_images(self) -> None:
+        celebrate = _load()
+        urls = celebrate.parse_custom_gifs(
+            "https://example.test/a.gif, http://insecure.test/b.gif\n"
+            "https://example.test/c.webp javascript:alert(1)\n"
+            "https://example.test/nsfw.gif"
+        )
+        self.assertEqual(urls, ["https://example.test/a.gif", "https://example.test/c.webp"])
+        self.assertEqual(
+            celebrate.pick_custom_gif(
+                ["https://example.test/a.gif", "https://example.test/c.webp"],
+                "12",
+            ),
+            celebrate.pick_custom_gif(
+                ["https://example.test/a.gif", "https://example.test/c.webp"],
+                "12",
+            ),
+        )
+        self.assertTrue(celebrate.gifs_path_ok(".github/merge-cheer"))
+        self.assertFalse(celebrate.gifs_path_ok("../secrets"))
+        self.assertEqual(celebrate.list_repo_gif_urls("", "org/repo", ".github/merge-cheer"), [])
+        celebrate._http_json = lambda *_a, **_k: [  # type: ignore[method-assign]
+            {
+                "type": "file",
+                "name": "ship.gif",
+                "download_url": "https://raw.githubusercontent.com/org/repo/main/.github/merge-cheer/ship.gif",
+            },
+            {"type": "file", "name": "readme.md", "download_url": "https://example.test/readme.md"},
+            {"type": "dir", "name": "nested"},
+        ]
+        self.assertEqual(
+            celebrate.list_repo_gif_urls("token", "org/repo", ".github/merge-cheer", "main"),
+            [
+                "https://raw.githubusercontent.com/org/repo/main/.github/merge-cheer/ship.gif"
+            ],
+        )
+
     def test_comment_tags_the_author_for_a_notification(self) -> None:
         celebrate = _load()
         from_placeholder = celebrate.comment_body(
@@ -407,6 +477,9 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("PR_LABELS:", text)
         self.assertIn("TOPIC: ${{ inputs.topic }}", text)
         self.assertIn("LOCALE: ${{ inputs.locale }}", text)
+        self.assertIn("CUSTOM_GIFS: ${{ inputs.gifs }}", text)
+        self.assertIn("GIFS_PATH: ${{ inputs.gifs-path }}", text)
+        self.assertIn("NOTE: ${{ inputs.note }}", text)
         self.assertNotIn(
             "${{ github.event.pull_request.title }}\n      run:",
             text,
@@ -588,6 +661,12 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("Keep credits low", readme)
         self.assertIn("examples/celebrate-openai.yml", html)
         self.assertIn("examples/celebrate-openai.yml", readme)
+        self.assertIn("examples/celebrate-custom.yml", html)
+        self.assertIn("examples/celebrate-custom.yml", readme)
+        self.assertIn("gifs-path", html)
+        self.assertIn("gifs-path", readme)
+        self.assertIn("Come hang out on Discord", html)
+        self.assertIn("Come hang out on Discord", readme)
         self.assertIn("examples/celebrate-more-openai.yml", html)
         self.assertIn("examples/celebrate-more-openai.yml", readme)
         self.assertIn("OPENAI_API_KEY", html)
@@ -751,8 +830,12 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("ACTION_REF=v1.7.0", example_bb)
         more = (ROOT / "examples" / "celebrate-more.yml").read_text(encoding="utf-8")
         merge = (ROOT / "examples" / "celebrate-merge.yml").read_text(encoding="utf-8")
+        custom = (ROOT / "examples" / "celebrate-custom.yml").read_text(encoding="utf-8")
         self.assertIn("YauhenBichel/merge-cheer@v1.7.0", more)
         self.assertIn("YauhenBichel/merge-cheer@v1.7.0", merge)
+        self.assertIn("gifs-path: .github/merge-cheer", custom)
+        self.assertIn("note:", custom)
+        self.assertIn("discord.gg", custom)
         self.assertNotIn("@v1.5.0", more)
         self.assertNotIn("@v1\n", merge)
         self.assertIn("BITBUCKET_ACCESS_TOKEN", pipe)
@@ -1144,6 +1227,8 @@ class CelebrateTest(unittest.TestCase):
                 "MODEL",
                 "MODEL_API_KEY",
                 "MODEL_BASE_URL",
+                "CUSTOM_GIFS",
+                "NOTE",
             )
         }
         try:
@@ -1195,6 +1280,18 @@ class CelebrateTest(unittest.TestCase):
             self.assertIn(".gif", buf.getvalue())
             self.assertIn("<!-- merge-cheer:merge -->", buf.getvalue())
 
+            os.environ["CUSTOM_GIFS"] = "https://example.test/team/ship.gif"
+            os.environ["NOTE"] = "Come hang out on Discord — https://discord.gg/your-invite"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("https://example.test/team/ship.gif", buf.getvalue())
+            self.assertIn("Come hang out on Discord — https://discord.gg/your-invite", buf.getvalue())
+            self.assertIn("Merged — thank you @alice.", buf.getvalue())
+
+            os.environ.pop("CUSTOM_GIFS", None)
+            os.environ.pop("NOTE", None)
             celebrate.list_github_comments = lambda *_a, **_k: [  # type: ignore[method-assign]
                 {"body": "<!-- merge-cheer:changes -->\nA bit more work — you have this @alice.\n"}
             ]

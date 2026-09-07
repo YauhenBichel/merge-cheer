@@ -323,6 +323,32 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("<!-- merge-cheer -->", body)
         self.assertNotIn("First contribution — welcome.", body)
 
+    def test_comment_tags_the_author_for_a_notification(self) -> None:
+        celebrate = _load()
+        from_placeholder = celebrate.comment_body(
+            "Login help still needs a pass — thanks {author}.",
+            "alice",
+            "ship it",
+            "https://example.test/ship/ship-it.gif",
+        )
+        self.assertIn("thanks @alice.", from_placeholder)
+        self.assertNotIn("thanks alice.", from_placeholder)
+        from_name = celebrate.comment_body(
+            "Cheers to YauhenBichel for keeping model cheers.",
+            "YauhenBichel",
+            "celebration",
+            "https://example.test/celebration.gif",
+        )
+        self.assertIn("@YauhenBichel", from_name)
+        self.assertNotIn("to YauhenBichel ", from_name)
+        missing = celebrate.comment_body(
+            "Shipped the login help.",
+            "alice",
+            "ship it",
+            "https://example.test/ship/ship-it.gif",
+        )
+        self.assertIn("@alice", missing)
+
     def test_comment_welcomes_a_first_timer(self) -> None:
         celebrate = _load()
         body = celebrate.comment_body(
@@ -1202,7 +1228,7 @@ class CelebrateTest(unittest.TestCase):
                 code = celebrate.main()
             out = buf.getvalue()
             self.assertEqual(code, 0)
-            self.assertIn("Login help still needs a pass — thanks alice.", out)
+            self.assertIn("Login help still needs a pass — thanks @alice.", out)
             self.assertIn("gifs/coffee/", out)
             self.assertNotIn("Closed — thank you for the work", out)
             self.assertNotIn("gifs/yeah/", out)
@@ -1272,7 +1298,7 @@ class CelebrateTest(unittest.TestCase):
                 code = celebrate.main()
             out = buf.getvalue()
             self.assertEqual(code, 0)
-            self.assertIn("Login help still needs a pass — thanks alice.", out)
+            self.assertIn("Login help still needs a pass — thanks @alice.", out)
             self.assertIn("gifs/yeah/", out)
             self.assertNotIn("A bit more work — you have this", out)
             self.assertNotIn("gifs/coffee/", out)

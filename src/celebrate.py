@@ -464,6 +464,27 @@ _UNSAFE = (
 FIRST_TIMER_LINE = "First contribution — welcome."
 
 
+def ensure_mention(text: str, login: str) -> str:
+    """GitHub only notifies when the comment contains `@login`."""
+    who = (login or "").lstrip("@")
+    if not who:
+        return text
+    if re.search(r"@" + re.escape(who) + r"\b", text, flags=re.I):
+        return text
+    tagged, n = re.subn(
+        r"(?<!@)\b" + re.escape(who) + r"\b",
+        f"@{who}",
+        text,
+        count=1,
+        flags=re.I,
+    )
+    if n:
+        return tagged
+    if not text.endswith("\n"):
+        text += "\n"
+    return f"{text}@{who}\n"
+
+
 def comment_body(
     message: str,
     author: str,
@@ -479,12 +500,13 @@ def comment_body(
     if "@{author}" in text:
         text = text.replace("{author}", named.lstrip("@") if named else who)
     else:
-        text = text.replace("{author}", who)
+        text = text.replace("{author}", named or who)
     if not text.endswith("\n"):
         text += "\n"
     if (association or "").upper() in FIRST_TIMERS:
         if FIRST_TIMER_LINE.lower() not in text.lower():
             text += f"{FIRST_TIMER_LINE}\n"
+    text = ensure_mention(text, who)
     if gif:
         src = html.escape(gif, quote=True)
         alt = html.escape(tag or "celebration", quote=True)
@@ -933,7 +955,7 @@ def ask_model(
         'Reply with JSON only: {"message": "<one short line>"}. '
         "The message must mention something from the title. "
         "Do not write a generic thanks. "
-        "Use {author} or {authors} placeholders. "
+        "Use @{author} or {authors} so GitHub notifies them. "
         "No slurs, no adult content, no violence."
     )
     user = json.dumps(

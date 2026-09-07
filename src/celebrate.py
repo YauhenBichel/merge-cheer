@@ -344,7 +344,7 @@ BUNDLED_GIFS = {
     "magic": ("wand.gif", "sparkles.gif"),
     "coffee": ("mug.gif", "night.gif"),
     "robot": ("wave.gif", "dance.gif"),
-    "comic": ("burst.gif", "pop.gif"),
+    "comic": ("burst.gif", "pop.gif", "alt.gif"),
     "sunny": ("sun.gif", "rainbow.gif"),
     "game": ("levelup.gif", "combo.gif"),
     "sticker": ("star.gif", "thumb.gif"),

@@ -3,9 +3,10 @@
 
 Layout is gifs/<group>/<name>.gif. A group may hold several files; the
 Action picks one. Motion is a short brightness pulse plus a tiny zoom.
-The `alt` file is the same still with the wave inverted — a cheap second
+The `alt` file is the same still with the wave inverted — a cheap extra
 option, not new art. Comic mood groups and IT-section groups each use
-two original stills, except `java` which reuses one still as `steam`.
+two original stills, except `java` which reuses one still as `steam`
+and `comic` which adds an inverted `pop` as `alt`.
 """
 
 from __future__ import annotations
@@ -56,6 +57,7 @@ VARIANTS = (
     ("robot-dance", "robot", "dance", False),
     ("comic-burst", "comic", "burst", False),
     ("comic-pop", "comic", "pop", False),
+    ("comic-pop", "comic", "alt", True),
     ("sunny-sun", "sunny", "sun", False),
     ("sunny-rainbow", "sunny", "rainbow", False),
     ("game-levelup", "game", "levelup", False),

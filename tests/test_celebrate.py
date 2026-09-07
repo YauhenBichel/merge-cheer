@@ -65,6 +65,10 @@ class CelebrateTest(unittest.TestCase):
             names = list((GIFS / group).glob("*.gif"))
             self.assertGreaterEqual(len(names), 2, group)
 
+    def test_comic_has_a_third_gif(self) -> None:
+        names = {path.name for path in (GIFS / "comic").glob("*.gif")}
+        self.assertEqual(names, {"burst.gif", "pop.gif", "alt.gif"})
+
     def test_no_gif_is_unused(self) -> None:
         celebrate = _load()
         allowed = set(celebrate.GROUPS)

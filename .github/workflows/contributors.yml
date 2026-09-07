@@ -1,9 +1,9 @@
 name: Contributors
 
-# Protected main refuses a GITHUB_TOKEN push (GH006). Offer the
-# refresh as a pull request instead of failing the job. If Actions
-# cannot create PRs, leave docs/contributors pushed and print the
-# compare URL.
+# The Action only writes files. This job commits them, opens a pull
+# request, and merges it so the wall lands on main by itself.
+# Needs Settings → Actions → General → Allow GitHub Actions to create
+# and approve pull requests.
 
 on:
   schedule:
@@ -50,15 +50,9 @@ jobs:
           git push --force --set-upstream origin docs/contributors
           NUMBER="$(gh pr list --head docs/contributors --state open --json number -q '.[0].number')"
           if [ -z "$NUMBER" ]; then
-            if ! CREATE_ERR="$(gh pr create --base "$DEFAULT_BRANCH" --head docs/contributors \
+            NUMBER="$(gh pr create --base "$DEFAULT_BRANCH" --head docs/contributors \
               --title "docs: refresh README contributors" \
-              --body "The contributors list changed. Opened because main takes changes only through a pull request." 2>&1)"; then
-              echo "$CREATE_ERR"
-              if echo "$CREATE_ERR" | grep -Fq "GitHub Actions is not permitted to create or approve pull requests"; then
-                echo "https://github.com/YauhenBichel/merge-cheer/compare/main...docs/contributors"
-                exit 0
-              fi
-              exit 1
-            fi
-            echo "$CREATE_ERR"
+              --body "Filled by readme-contributors so the wall stays current." \
+              --json number --jq .number)"
           fi
+          gh pr merge "$NUMBER" --squash --auto

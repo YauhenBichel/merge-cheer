@@ -379,8 +379,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("topic: title", readme)
         self.assertIn("topic: auto", html)
         self.assertIn("topic: comic", html)
-        self.assertIn("YauhenBichel/merge-cheer@v1.3.0", html)
-        self.assertIn("releases/tag/v1.3.0", html)
+        self.assertIn("YauhenBichel/merge-cheer@v1.4.0", html)
+        self.assertIn("releases/tag/v1.4.0", html)
         self.assertIn("merge-cheer-demo.mp4", html)
         self.assertIn("merge-cheer-demo-poster.png", html)
         self.assertIn("id=\"demo\"", html)
@@ -437,7 +437,7 @@ class CelebrateTest(unittest.TestCase):
             "https://yauhenbichel.github.io/merge-cheer/gifs/comic/pop.gif",
             medium,
         )
-        self.assertIn("YauhenBichel/merge-cheer@v1.3.0", medium)
+        self.assertIn("YauhenBichel/merge-cheer@v1.4.0", medium)
         self.assertIn("random theme", medium)
         self.assertNotIn("marketplace/actions", medium)
         self.assertNotIn("/Users/", medium)
@@ -500,17 +500,11 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("pull-requests: write", text)
         self.assertIn("docs/contributors", text)
         self.assertIn("gh pr create", text)
-        self.assertIn(
+        self.assertIn("gh pr merge", text)
+        self.assertNotIn(
             "GitHub Actions is not permitted to create or approve pull requests",
             text,
         )
-        self.assertIn(
-            "https://github.com/YauhenBichel/merge-cheer/compare/main...docs/contributors",
-            text,
-        )
-        self.assertIn("exit 0", text)
-        self.assertIn("exit 1", text)
-        self.assertNotIn("git push\n", text)
 
     def test_bundled_gif_names_match_the_repo(self) -> None:
         celebrate = _load()
@@ -568,7 +562,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("celebrate.py", component)
         self.assertIn("release:", gitlab_ci)
         self.assertIn("python3 -m unittest discover -s tests -q", gitlab_ci)
-        self.assertIn("yauhenbichel/merge-cheer:1.3.0", pipe)
+        self.assertIn("yauhenbichel/merge-cheer:1.4.0", pipe)
         self.assertIn("BITBUCKET_ACCESS_TOKEN", pipe)
         self.assertIn("src/celebrate.py", dockerfile)
         self.assertIn("CI/CD Catalog", markets)

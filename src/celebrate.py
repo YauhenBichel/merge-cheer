@@ -257,6 +257,9 @@ _TITLE_RULES = (
     ("cpp", ("c++", "cplusplus", " cpp", "cpp:", "cpp ")),
     ("golang", ("golang", "gopher")),
     ("java", ("java:", "java ", "jdk", "jvm", "spring boot")),
+    # After mood groups so "chore: coffee" stays coffee. Prefixes only —
+    # "choreography" must not match.
+    ("cleanup", ("chore:", "chore ")),
 )
 
 

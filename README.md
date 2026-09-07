@@ -269,7 +269,7 @@ file in the group (stable for a given pull request number).
 | `fix` | `fix`, `bug`, `hotfix`, `patch` | ![fix](gifs/fix/nailed-it.gif) |
 | `docs` | `doc`, `readme` | ![docs](gifs/docs/nice-work.gif) |
 | `tests` | `test`, `ci` | ![tests](gifs/tests/high-five.gif) |
-| `cleanup` | `refactor`, `clean`, `typo`, `style`, `lint`, `format` | ![cleanup](gifs/cleanup/cleanup.gif) |
+| `cleanup` | `refactor`, `clean`, `typo`, `style`, `lint`, `format`, `chore:` | ![cleanup](gifs/cleanup/cleanup.gif) |
 | `celebration` | anything else | ![celebration](gifs/celebration/celebration.gif) |
 | `welcome` | `welcome`, `good first`, first-time contributor | ![welcome](gifs/welcome/high-five.gif) |
 | `party` | `party`, `congrats`, `woo`, `hooray`, `celebrate` | ![party](gifs/party/confetti.gif) |

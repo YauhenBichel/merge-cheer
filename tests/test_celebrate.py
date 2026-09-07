@@ -154,7 +154,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.pick_from_title("docs: readme"), "docs")
         self.assertEqual(celebrate.pick_from_title("test: cover ci"), "tests")
         self.assertEqual(celebrate.pick_from_title("refactor: clean path"), "cleanup")
-        self.assertEqual(celebrate.pick_from_title("chore: bump"), "celebration")
+        self.assertEqual(celebrate.pick_from_title("chore: bump"), "cleanup")
         self.assertEqual(celebrate.pick_from_title("welcome first contrib"), "welcome")
         self.assertEqual(celebrate.pick_from_title("party time"), "party")
         self.assertEqual(celebrate.pick_from_title("congrats team"), "party")
@@ -196,8 +196,10 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.pick_from_title("docs: sticker pack"), "docs")
         self.assertEqual(celebrate.pick_from_title("test: sunny path"), "tests")
         self.assertEqual(celebrate.pick_from_title("refactor: yeah helper"), "cleanup")
-        self.assertEqual(celebrate.pick_from_title("chore: power"), "celebration")
-        self.assertEqual(celebrate.pick_from_title("chore: game night"), "celebration")
+        self.assertEqual(celebrate.pick_from_title("chore: power"), "cleanup")
+        self.assertEqual(celebrate.pick_from_title("chore: game night"), "cleanup")
+        self.assertEqual(celebrate.pick_from_title("feat: add chore mode"), "ship")
+        self.assertEqual(celebrate.pick_from_title("choreography notes"), "celebration")
         self.assertEqual(celebrate.pick_from_title("feat: add python client"), "ship")
         self.assertEqual(celebrate.pick_from_title("fix: java null"), "fix")
         self.assertEqual(celebrate.pick_from_title("test: frontend grid"), "tests")
@@ -207,6 +209,10 @@ class CelebrateTest(unittest.TestCase):
         celebrate = _load()
         self.assertEqual(
             celebrate.pick_from_title("chore: bump", "FIRST_TIME_CONTRIBUTOR"),
+            "cleanup",
+        )
+        self.assertEqual(
+            celebrate.pick_from_title("misc tweaks", "FIRST_TIME_CONTRIBUTOR"),
             "welcome",
         )
         self.assertEqual(celebrate.pick_from_title("fix: leak", "FIRST_TIMER"), "fix")
@@ -753,6 +759,9 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.pick_from_title("style: imports"), "cleanup")
         self.assertEqual(celebrate.pick_from_title("lint: unused"), "cleanup")
         self.assertEqual(celebrate.pick_from_title("format: black"), "cleanup")
+        self.assertEqual(celebrate.pick_from_title("chore: bump lockfile"), "cleanup")
+        self.assertEqual(celebrate.pick_from_title("chore bump lockfile"), "cleanup")
+        self.assertEqual(celebrate.pick_from_title("chore: coffee"), "coffee")
         self.assertEqual(celebrate.pick_from_title("feat: typo in copy"), "ship")
         self.assertEqual(
             celebrate.pick_from_title("chore: bump", "", "Please lint the extras."),
@@ -764,6 +773,8 @@ class CelebrateTest(unittest.TestCase):
             ),
             "cleanup",
         )
+        self.assertEqual(celebrate.resolve_group("chore: bump lockfile", "title"), "cleanup")
+        self.assertEqual(celebrate.resolve_group("choreography notes", "title"), "celebration")
 
     def test_coauthors_and_authors_placeholder(self) -> None:
         celebrate = _load()

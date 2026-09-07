@@ -2,7 +2,8 @@
 """Turn the owned stills into small looping GIFs for PR comments.
 
 Layout is gifs/<group>/<name>.gif. A group may hold several files; the
-Action picks one. Motion is a short brightness pulse plus a tiny zoom.
+Action picks one. Motion is a short camera move: zoom, pan, a little
+tilt, and a brightness pulse, so the loop reads as a clip, not a still.
 The `alt` file is the same still with the wave inverted — a cheap extra
 option, not new art. Comic mood groups and IT-section groups each use
 two original stills, except `java` which reuses one still as `steam`
@@ -22,9 +23,9 @@ ROOT = Path(__file__).resolve().parents[1]
 STILLS = ROOT / "stills"
 GIFS = ROOT / "gifs"
 MAX_BYTES = 180 * 1024
-DURATION_MS = 110
+DURATION_MS = 90
 
-# still stem, group, output stem, invert the pulse
+# still stem, group, output stem, invert the camera move
 VARIANTS = (
     ("ship-it", "ship", "ship-it", False),
     ("ship-it", "ship", "alt", True),
@@ -92,13 +93,13 @@ VARIANTS = (
     ("golang-wave", "golang", "wave", False),
 )
 
-# Drop frames, colors, then pixels if a still is too busy for 180 KB.
+# Drop pixels, then colors, then frames if a still is too busy for 180 KB.
 _PRESETS = (
-    (6, 48, 280),
-    (6, 40, 260),
-    (5, 32, 240),
-    (4, 28, 220),
-    (4, 24, 200),
+    (8, 36, 260),
+    (8, 32, 250),
+    (8, 28, 240),
+    (8, 24, 220),
+    (6, 24, 200),
 )
 
 
@@ -110,20 +111,42 @@ def _square(src: Path, size: int) -> Image.Image:
     return canvas
 
 
+def _affine(
+    size: int, zoom: float, angle_deg: float, pan_x: float, pan_y: float
+) -> tuple[float, float, float, float, float, float]:
+    # Map output pixels back to the still: zoom, tilt, then pan.
+    cosine = math.cos(math.radians(angle_deg)) / zoom
+    sine = math.sin(math.radians(angle_deg)) / zoom
+    center = size / 2
+    return (
+        cosine,
+        sine,
+        -cosine * center - sine * center + center - pan_x,
+        -sine,
+        cosine,
+        sine * center - cosine * center + center - pan_y,
+    )
+
+
 def _frame(
     base: Image.Image, index: int, frames: int, invert: bool, colors: int
 ) -> Image.Image:
     size = base.width
-    wave = math.sin(2 * math.pi * index / frames)
+    turn = index / frames
+    wave = math.sin(2 * math.pi * turn)
     if invert:
         wave = -wave
-    zoomed = 1.0 + (0.028 if invert else 0.018) * (0.5 + 0.5 * wave)
-    crop = max(2, int(size * (1 - 1 / zoomed) / 2))
-    frame = base.crop((crop, crop, size - crop, size - crop)).resize(
-        (size, size), Image.Resampling.LANCZOS
+    zoom = 1.05 + 0.10 * (0.5 + 0.5 * wave)
+    angle = (2.4 if invert else -2.4) * wave
+    pan_x = 0.028 * size * wave
+    pan_y = 0.018 * size * math.cos(2 * math.pi * turn) * (-1 if invert else 1)
+    frame = base.transform(
+        (size, size),
+        Image.Transform.AFFINE,
+        _affine(size, zoom, angle, pan_x, pan_y),
+        resample=Image.Resampling.BICUBIC,
     )
-    bright = 1.0 + (0.06 if invert else 0.04) * wave
-    frame = ImageEnhance.Brightness(frame).enhance(bright)
+    frame = ImageEnhance.Brightness(frame).enhance(1.0 + 0.07 * wave)
     return frame.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
 
 

@@ -32,8 +32,9 @@ inputs:
     default: "Merged — thank you @{author}."
   locale:
     description: >
-      Language for the default thank-you when message is unset.
-      en, es, de, fr, pt, uk, it, be, ja. Unknown codes fall back to English.
+      Language for the default thank-you and first-timer line when
+      message is unset. en, es, de, fr, pt, uk, it, be, ja. Unknown
+      codes fall back to English.
       A pinned message, closed-message, or changes-message still wins.
     required: false
     default: "en"

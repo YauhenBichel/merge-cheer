@@ -374,6 +374,22 @@ class CelebrateTest(unittest.TestCase):
             association="FIRST_TIMER",
         )
         self.assertEqual(again.count("First contribution — welcome."), 1)
+        ja = celebrate.comment_body(
+            "マージしました — ありがとう @{author}。",
+            "alice",
+            "welcome",
+            "https://example.test/welcome/high-five.gif",
+            association="FIRST_TIME_CONTRIBUTOR",
+            locale="ja",
+        )
+        self.assertIn("初めてのコントリビューション — ようこそ。", ja)
+        self.assertNotIn("First contribution — welcome.", ja)
+        self.assertEqual(
+            celebrate.first_timer_line("zz"),
+            "First contribution — welcome.",
+        )
+        for code in celebrate.LOCALES:
+            self.assertIn(code, celebrate.FIRST_TIMER_LINES)
 
     def test_action_never_checkouts_the_pull_request(self) -> None:
         text = ACTION.read_text(encoding="utf-8")

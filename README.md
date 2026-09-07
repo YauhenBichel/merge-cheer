@@ -325,7 +325,7 @@ before `qa`. `feat: add python client` still ships.
 | `topic` | `auto` | Group name, `auto` for a random theme, or `title` to pick from the PR title and body |
 | `giphy-api-key` | empty | Optional. When set, try a G-rated Giphy GIF first |
 | `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds unique human co-authors and reviewers |
-| `locale` | `en` | Default thank-you language (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja`). Unknown codes fall back to English. A pinned `message` wins |
+| `locale` | `en` | Default thank-you and first-timer language (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja`). Unknown codes fall back to English. A pinned `message` wins |
 | `closed-topic` / `closed-message` | `coffee` / closed thanks | Used when a pull request closes without a merge |
 | `changes-topic` / `changes-message` | `yeah` / more-work line | Used when a reviewer asks for more work |
 | `model` | empty | Optional chat model for the thank-you line only. GIF group stays from `topic` (`auto` is random, `title` is the map) |

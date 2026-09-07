@@ -465,6 +465,21 @@ _UNSAFE = (
 
 
 FIRST_TIMER_LINE = "First contribution — welcome."
+FIRST_TIMER_LINES = {
+    "en": FIRST_TIMER_LINE,
+    "es": "Primera contribución — bienvenido.",
+    "de": "Erster Beitrag — willkommen.",
+    "fr": "Première contribution — bienvenue.",
+    "pt": "Primeira contribuição — bem-vindo.",
+    "uk": "Перший внесок — ласкаво просимо.",
+    "it": "Prima contribuzione — benvenuto.",
+    "be": "Першы ўклад — запрашаем.",
+    "ja": "初めてのコントリビューション — ようこそ。",
+}
+
+
+def first_timer_line(locale: str = "") -> str:
+    return FIRST_TIMER_LINES.get(normalize_locale(locale)) or FIRST_TIMER_LINE
 
 
 def ensure_mention(text: str, login: str) -> str:
@@ -495,6 +510,7 @@ def comment_body(
     gif: str,
     authors: str = "",
     association: str = "",
+    locale: str = "",
 ) -> str:
     who = (author or "").lstrip("@")
     named = authors or (f"@{who}" if who else "")
@@ -507,8 +523,13 @@ def comment_body(
     if not text.endswith("\n"):
         text += "\n"
     if (association or "").upper() in FIRST_TIMERS:
-        if FIRST_TIMER_LINE.lower() not in text.lower():
-            text += f"{FIRST_TIMER_LINE}\n"
+        line = first_timer_line(locale)
+        already = (
+            line.lower() in text.lower()
+            or FIRST_TIMER_LINE.lower() in text.lower()
+        )
+        if not already:
+            text += f"{line}\n"
     text = ensure_mention(text, who)
     if gif:
         src = html.escape(gif, quote=True)
@@ -1451,7 +1472,15 @@ def main() -> int:
             name,
         )
     label = LABEL[group]
-    body = comment_body(message, author, label, gif, authors, association)
+    body = comment_body(
+        message,
+        author,
+        label,
+        gif,
+        authors,
+        association,
+        os.environ.get("LOCALE", ""),
+    )
     write_output(
         os.environ.get("GITHUB_OUTPUT", ""),
         {

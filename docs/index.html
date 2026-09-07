@@ -195,7 +195,7 @@ jobs:
     <ol class="steps">
       <li>Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/gitlab-ci.yml">examples/gitlab-ci.yml</a> onto the default branch, or include the Catalog component after you publish one.</li>
       <li>Add a project access token <code>GITLAB_TOKEN</code> with <code>api</code> scope. <code>CI_JOB_TOKEN</code> cannot post notes.</li>
-      <li>Merge into the default branch. The job finds that merge request and comments the GIF.</li>
+      <li>Merge into the default branch. The job finds that merge request and comments the GIF. A job that can see a closed or change-requested MR uses those moments instead.</li>
     </ol>
     <pre>include:
   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.6.0
@@ -208,7 +208,7 @@ jobs:
     <ol class="steps">
       <li>Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/bitbucket-pipelines.yml">examples/bitbucket-pipelines.yml</a> onto <code>main</code>.</li>
       <li>Add a secured repository variable <code>BITBUCKET_ACCESS_TOKEN</code> with pullrequest write.</li>
-      <li>Merge a pull request. The step comments the GIF.</li>
+      <li>Merge a pull request. The step comments the GIF. A job that can see a declined or change-requested PR uses those moments instead.</li>
     </ol>
     <pre>script:
   - pipe: docker://eugenebichel/merge-cheer:1.5.0

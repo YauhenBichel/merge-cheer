@@ -122,8 +122,9 @@ checks out the pull request head. The full case list is on the
    ([MARKETPLACES.md](MARKETPLACES.md)).
 2. Add a project access token `GITLAB_TOKEN` with `api` scope.
    `CI_JOB_TOKEN` cannot post merge-request notes.
-3. Push a merge to the default branch. The job finds that merged MR and
-   comments the GIF.
+3. Merge to the default branch. The job finds that MR and comments the
+   GIF. A job that can see a closed or change-requested MR uses those
+   moments instead.
 
 ```yaml
 include:
@@ -143,6 +144,8 @@ Until the Catalog row exists, the curl job in
 2. Add a secured repository variable `BITBUCKET_ACCESS_TOKEN` with
    pullrequest write.
 3. Merge a pull request into that branch. The step comments the GIF.
+   A job that can see a declined or change-requested PR uses those
+   moments instead.
 
 ```yaml
 script:

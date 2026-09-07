@@ -391,6 +391,14 @@ class CelebrateTest(unittest.TestCase):
         for group in celebrate.GROUPS:
             self.assertIn(group, text)
 
+    def test_contributing_lists_every_group(self) -> None:
+        celebrate = _load()
+        text = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+        self.assertNotIn("issues/1", text)
+        self.assertNotIn("issues/4", text)
+        for group in celebrate.GROUPS:
+            self.assertIn(f"`{group}`", text)
+
     def test_action_uses_the_stdlib_script(self) -> None:
         text = ACTION.read_text(encoding="utf-8")
         self.assertIn("src/celebrate.py", text)
@@ -420,6 +428,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("**How.**", text)
         self.assertIn("`locale`", text)
         self.assertIn("reviewers", text)
+        self.assertIn("closed or change-requested MR", text)
+        self.assertIn("declined or change-requested PR", text)
         self.assertIn(".github/workflows/celebrate.yml", text)
         dogfood = (ROOT / ".github" / "workflows" / "celebrate.yml").read_text(
             encoding="utf-8"
@@ -453,6 +463,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("no-cheer", html)
         self.assertIn("reviewers", html)
         self.assertIn("closed without merge, or changes requested when the job can see that request", html)
+        self.assertIn("closed or change-requested MR", html)
+        self.assertIn("declined or change-requested PR", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)

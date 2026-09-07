@@ -321,6 +321,27 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn('width="560"', body)
         self.assertIn("<img ", body)
         self.assertIn("<!-- merge-cheer -->", body)
+        self.assertNotIn("First contribution — welcome.", body)
+
+    def test_comment_welcomes_a_first_timer(self) -> None:
+        celebrate = _load()
+        body = celebrate.comment_body(
+            "Merged — thank you @{author}.",
+            "alice",
+            "welcome",
+            "https://example.test/welcome/high-five.gif",
+            association="FIRST_TIME_CONTRIBUTOR",
+        )
+        self.assertIn("@alice", body)
+        self.assertIn("First contribution — welcome.", body)
+        again = celebrate.comment_body(
+            "First contribution — welcome.\nMerged — thank you @{author}.",
+            "alice",
+            "welcome",
+            "https://example.test/welcome/high-five.gif",
+            association="FIRST_TIMER",
+        )
+        self.assertEqual(again.count("First contribution — welcome."), 1)
 
     def test_action_never_checkouts_the_pull_request(self) -> None:
         text = ACTION.read_text(encoding="utf-8")
@@ -377,6 +398,7 @@ class CelebrateTest(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("uses: ./", dogfood)
+        self.assertIn("First-time authors get a welcome line.", dogfood)
         self.assertIn("model: gpt-4o-mini", dogfood)
         self.assertIn("secrets.OPENAI_API_KEY", dogfood)
         self.assertIn("github.event.repository.default_branch", dogfood)
@@ -395,6 +417,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("random theme", html)
         self.assertIn("random theme", readme)
         self.assertIn("topic: title", readme)
+        self.assertIn("First contribution — welcome.", html)
+        self.assertIn("First contribution — welcome.", readme)
         self.assertIn("topic: auto", html)
         self.assertIn("topic: comic", html)
         self.assertIn("YauhenBichel/merge-cheer@v1.6.0", html)

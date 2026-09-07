@@ -461,12 +461,16 @@ _UNSAFE = (
 )
 
 
+FIRST_TIMER_LINE = "First contribution — welcome."
+
+
 def comment_body(
     message: str,
     author: str,
     tag: str,
     gif: str,
     authors: str = "",
+    association: str = "",
 ) -> str:
     who = (author or "").lstrip("@")
     named = authors or (f"@{who}" if who else "")
@@ -478,6 +482,9 @@ def comment_body(
         text = text.replace("{author}", who)
     if not text.endswith("\n"):
         text += "\n"
+    if (association or "").upper() in FIRST_TIMERS:
+        if FIRST_TIMER_LINE.lower() not in text.lower():
+            text += f"{FIRST_TIMER_LINE}\n"
     if gif:
         src = html.escape(gif, quote=True)
         alt = html.escape(tag or "celebration", quote=True)
@@ -1290,7 +1297,7 @@ def main() -> int:
             name,
         )
     label = LABEL[group]
-    body = comment_body(message, author, label, gif, authors)
+    body = comment_body(message, author, label, gif, authors, association)
     write_output(
         os.environ.get("GITHUB_OUTPUT", ""),
         {

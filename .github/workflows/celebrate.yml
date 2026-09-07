@@ -4,7 +4,7 @@ name: Celebrate merge
 # reviewer asks for more work. Checkout is the default branch
 # only — never the pull request head. A no-cheer / skip-cheer
 # label skips the comment. A second run on the same PR does not
-# post another GIF.
+# post another GIF. First-time authors get a welcome line.
 on:
   pull_request_target:
     types: [closed]

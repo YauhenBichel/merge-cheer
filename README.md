@@ -290,6 +290,7 @@ file in the group (stable for a given pull request number).
 `welcome` also wins on `topic: title` when GitHub marks the author
 `FIRST_TIME_CONTRIBUTOR` or `FIRST_TIMER` and the title did not match
 another group. It reuses the tests and celebration loops — no extra art.
+The comment adds `First contribution — welcome.` for those authors.
 
 Conventional title types (`fix`, `feat`, `docs`, `test`, `refactor`)
 win before mood keywords, so `feat: add party mode` still ships.

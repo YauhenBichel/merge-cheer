@@ -257,7 +257,7 @@ jobs:
       <li><strong>Model merge.</strong> Live on <a href="https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316">#53</a>. The model writes the line. The GIF still comes from <code>topic</code>, not from the model.</li>
       <li><strong>Closed without merge.</strong> <code>Closed — thank you for the work</code>. <code>closed-topic</code> defaults to coffee. Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-more.yml">examples/celebrate-more.yml</a>. The model path is <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-more-openai.yml">examples/celebrate-more-openai.yml</a> — the GIF stays coffee.</li>
       <li><strong>Changes requested.</strong> <code>A bit more work — you have this</code>. <code>changes-topic</code> defaults to yeah. Same two example files. The model writes the line. The GIF stays yeah.</li>
-      <li><strong><code>topic: title</code>.</strong> Reads the PR title and body. Conventional types beat mood words. First-timers can get welcome.</li>
+      <li><strong><code>topic: title</code>.</strong> Reads the PR title and body. Conventional types beat mood words. First-timers can get welcome, plus <code>First contribution — welcome.</code> on the comment.</li>
       <li><strong>Pinned topic.</strong> <code>topic: python</code> (or comic, devops, …) on every merge.</li>
       <li><strong>Skip.</strong> Bot author, bot reviewer, <code>no-cheer</code> / <code>skip-cheer</code>, or a second run on the same pull request.</li>
       <li><strong>GitLab / Bitbucket.</strong> Merge-only. A second run on the same merge request does not post another GIF. Curl until Catalog or Pipes exist.</li>

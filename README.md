@@ -268,7 +268,7 @@ file in the group (stable for a given pull request number).
 | `ship` | `feat`, `add `, `added`, `new `, `launch`, `ship:` | ![ship](gifs/ship/ship-it.gif) |
 | `fix` | `fix`, `bug`, `hotfix`, `patch` | ![fix](gifs/fix/nailed-it.gif) |
 | `docs` | `doc`, `readme` | ![docs](gifs/docs/nice-work.gif) |
-| `tests` | `test`, `ci` | ![tests](gifs/tests/high-five.gif) |
+| `tests` | `test`, `ci`, `build:` | ![tests](gifs/tests/high-five.gif) |
 | `cleanup` | `refactor`, `clean`, `typo`, `style`, `lint`, `format`, `chore:` | ![cleanup](gifs/cleanup/cleanup.gif) |
 | `celebration` | anything else | ![celebration](gifs/celebration/celebration.gif) |
 | `welcome` | `welcome`, `good first`, first-time contributor | ![welcome](gifs/welcome/high-five.gif) |

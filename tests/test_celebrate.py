@@ -153,6 +153,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.pick_from_title("feat: add login"), "ship")
         self.assertEqual(celebrate.pick_from_title("docs: readme"), "docs")
         self.assertEqual(celebrate.pick_from_title("test: cover ci"), "tests")
+        self.assertEqual(celebrate.pick_from_title("build: webpack"), "tests")
+        self.assertEqual(celebrate.pick_from_title("build lockfile"), "tests")
         self.assertEqual(celebrate.pick_from_title("refactor: clean path"), "cleanup")
         self.assertEqual(celebrate.pick_from_title("chore: bump"), "cleanup")
         self.assertEqual(celebrate.pick_from_title("welcome first contrib"), "welcome")
@@ -204,6 +206,9 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.pick_from_title("fix: java null"), "fix")
         self.assertEqual(celebrate.pick_from_title("test: frontend grid"), "tests")
         self.assertEqual(celebrate.pick_from_title("docs: devops runbook"), "docs")
+        self.assertEqual(celebrate.pick_from_title("feat: add build mode"), "ship")
+        self.assertEqual(celebrate.pick_from_title("rebuild the cache"), "celebration")
+        self.assertEqual(celebrate.pick_from_title("chore: build image"), "cleanup")
 
     def test_first_timer_generic_title_is_welcome(self) -> None:
         celebrate = _load()

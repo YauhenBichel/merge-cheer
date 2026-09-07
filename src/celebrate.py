@@ -262,6 +262,13 @@ _TITLE_RULES = (
     ("cleanup", ("chore:", "chore ")),
 )
 
+# Conventional prefixes, start of title only. "rebuild" must not match
+# "build ", and "docker" must not steal via the docs "doc" substring
+# after a later word scan — these run first.
+_TITLE_PREFIXES = (
+    ("tests", ("build:", "build ")),
+)
+
 
 def allowed_topics() -> str:
     return ", ".join(("auto", "title") + GROUPS)
@@ -280,6 +287,10 @@ def _first_title_match(text: str) -> str:
     low = (text or "").lower()
     if not low.strip():
         return ""
+    stripped = low.lstrip()
+    for group, prefixes in _TITLE_PREFIXES:
+        if any(stripped.startswith(prefix) for prefix in prefixes):
+            return group
     for group, words in _TITLE_RULES:
         if any(word in low for word in words):
             return group

@@ -437,6 +437,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("id=\"model\"", html)
         self.assertIn("id=\"ai\"", html)
         self.assertIn("id=\"cases\"", html)
+        self.assertIn("does not post another GIF", html)
+        self.assertNotIn("A second pipeline can post again", html)
         self.assertIn("8 public repositories", html)
         self.assertIn("8 public repositories", readme)
         self.assertIn("is a random theme", html)
@@ -881,6 +883,131 @@ class CelebrateTest(unittest.TestCase):
             self.assertIn("Merged — thank you @alice.", buf.getvalue())
             self.assertIn(".gif", buf.getvalue())
             self.assertIn("<!-- merge-cheer -->", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_skips_already_cheered_on_gitlab_and_bitbucket(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "BITBUCKET_REPO_FULL_NAME",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "GITLAB_TOKEN",
+                "CI_PROJECT_ID",
+                "BITBUCKET_ACCESS_TOKEN",
+                "BITBUCKET_WORKSPACE",
+                "BITBUCKET_REPO_SLUG",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        marked = [{"body": "<!-- merge-cheer -->\nalready\n"}]
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "fix: login"
+
+            os.environ["GITLAB_CI"] = "true"
+            celebrate.list_gitlab_notes = lambda *_a, **_k: marked  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("skip: already cheered", buf.getvalue())
+
+            os.environ.pop("GITLAB_CI", None)
+            os.environ["BITBUCKET_COMMIT"] = "abc"
+            celebrate.list_bitbucket_comments = lambda *_a, **_k: marked  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("skip: already cheered", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_skip_logs_for_bot_and_non_cheer(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "BITBUCKET_REPO_FULL_NAME",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_AUTHOR_TYPE",
+                "PR_NUMBER",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "REVIEW_AUTHOR",
+                "REVIEW_AUTHOR_TYPE",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "fix: login"
+
+            os.environ["PR_AUTHOR"] = "dependabot[bot]"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("skip bot author", buf.getvalue())
+
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["REVIEW_STATE"] = "changes_requested"
+            os.environ["REVIEW_AUTHOR"] = "renovate[bot]"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("skip bot reviewer", buf.getvalue())
+
+            os.environ.pop("REVIEW_AUTHOR", None)
+            os.environ["REVIEW_STATE"] = "approved"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("skip: not a cheer moment", buf.getvalue())
         finally:
             for key, value in saved.items():
                 if value is None:

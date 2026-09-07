@@ -970,6 +970,28 @@ def post_gitlab_note(token: str, project: str, iid: str, body: str) -> None:
     )
 
 
+def list_gitlab_notes(token: str, project: str, iid: str) -> list:
+    if not token or not project or not iid:
+        return []
+    encoded = urllib.parse.quote(str(project), safe="")
+    try:
+        data = _http_json(
+            f"{gitlab_api_root()}/projects/{encoded}/merge_requests/{iid}/notes?per_page=100",
+            token,
+            headers=gitlab_headers(token),
+        )
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"notes lookup skipped: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        return []
+    notes = []
+    for item in data:
+        if isinstance(item, dict):
+            notes.append({"body": str(item.get("body") or "")})
+    return notes
+
+
 def lookup_gitlab_mr(token: str) -> dict[str, str]:
     project = os.environ.get("CI_PROJECT_ID", "").strip()
     iid = os.environ.get("CI_MERGE_REQUEST_IID", "").strip()
@@ -1022,6 +1044,30 @@ def post_bitbucket_comment(token: str, workspace: str, slug: str, number: str, b
         method="POST",
         payload={"content": {"raw": body}},
     )
+
+
+def list_bitbucket_comments(token: str, workspace: str, slug: str, number: str) -> list:
+    if not token or not workspace or not slug or not number:
+        return []
+    try:
+        data = _http_json(
+            f"https://api.bitbucket.org/2.0/repositories/{workspace}/{slug}/pullrequests/{number}/comments?pagelen=100",
+            token,
+        )
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"comments lookup skipped: {exc}", file=sys.stderr)
+        return []
+    values = data.get("values") if isinstance(data, dict) else data
+    if not isinstance(values, list):
+        return []
+    comments = []
+    for item in values:
+        if not isinstance(item, dict):
+            continue
+        content = item.get("content") or {}
+        raw = content.get("raw") if isinstance(content, dict) else ""
+        comments.append({"body": str(raw or "")})
+    return comments
 
 
 def lookup_bitbucket_pr(token: str) -> dict[str, str]:
@@ -1128,7 +1174,27 @@ def main() -> int:
     if should_skip(title, labels):
         print("skip cheer requested")
         return 0
-    if host == "github" and already_cheered(list_github_comments(token, repo, number)):
+    existing = []
+    if host == "github":
+        existing = list_github_comments(token, repo, number)
+    elif host == "gitlab":
+        existing = list_gitlab_notes(
+            (
+                os.environ.get("GITLAB_TOKEN")
+                or os.environ.get("CI_JOB_TOKEN")
+                or ""
+            ).strip(),
+            os.environ.get("CI_PROJECT_ID", "").strip(),
+            number,
+        )
+    elif host == "bitbucket":
+        existing = list_bitbucket_comments(
+            os.environ.get("BITBUCKET_ACCESS_TOKEN", "").strip(),
+            os.environ.get("BITBUCKET_WORKSPACE", "").strip(),
+            os.environ.get("BITBUCKET_REPO_SLUG", "").strip(),
+            number,
+        )
+    if existing and already_cheered(existing):
         print("skip: already cheered")
         return 0
     topic = moment_topic(

@@ -18,7 +18,7 @@ group with `topic` when you want one mood every time. Use `topic: title`
 to pick from the title and body. A `no-cheer` / `skip-cheer` label (or
 the same words in the title) skips the comment. The Action thanks
 co-authors (`{authors}`) and will not post a second GIF on the same
-pull request. Set an OpenAI-compatible `model` and `model-api-key` for
+pull request or merge request. Set an OpenAI-compatible `model` and `model-api-key` for
 one G-rated line about what merged; generic thanks fall back to the
 stdlib path.
 

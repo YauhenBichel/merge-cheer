@@ -557,6 +557,11 @@ LOCALES = {
         "closed": "Chiuso — grazie per il lavoro @{author}.",
         "changes": "Ancora un po' di lavoro — ce la fai @{author}.",
     },
+    "be": {
+        "merge": "Змерджана — дзякуй @{author}.",
+        "closed": "Закрыта — дзякуй за працу @{author}.",
+        "changes": "Яшчэ крыху працы — у цябе атрымаецца @{author}.",
+    },
 }
 
 

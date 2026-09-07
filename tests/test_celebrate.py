@@ -966,6 +966,8 @@ class CelebrateTest(unittest.TestCase):
         celebrate = _load()
         self.assertEqual(celebrate.normalize_locale("es-ES"), "es")
         self.assertEqual(celebrate.normalize_locale("it-IT"), "it")
+        self.assertEqual(celebrate.normalize_locale("be-BY"), "be")
+        self.assertEqual(celebrate.normalize_locale("uk-UA"), "uk")
         self.assertEqual(celebrate.normalize_locale(""), "en")
         self.assertEqual(
             celebrate.localize_message(
@@ -992,6 +994,18 @@ class CelebrateTest(unittest.TestCase):
                 "it",
             ),
             "Ancora un po' di lavoro — ce la fai @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "merge", "Merged — thank you @{author}.", "be"
+            ),
+            "Змерджана — дзякуй @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "closed", "Closed — thank you for the work @{author}.", "be"
+            ),
+            "Закрыта — дзякуй за працу @{author}.",
         )
         self.assertEqual(
             celebrate.localize_message(

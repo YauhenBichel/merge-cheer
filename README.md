@@ -108,7 +108,10 @@ not want a model call.
 Also comment when a pull request **closes without a merge**, or when a
 reviewer asks for **more work**. Tone stays kind. Copy
 [examples/celebrate-more.yml](examples/celebrate-more.yml). Close uses
-the `coffee` group. A changes request uses `yeah`. The Action never
+the `coffee` group. A changes request uses `yeah`. Add
+[examples/celebrate-more-openai.yml](examples/celebrate-more-openai.yml)
+when you want the model to write those lines too — the GIF group still
+comes from `closed-topic` / `changes-topic`. The Action never
 checks out the pull request head. The full case list is on the
 [site](https://yauhenbichel.github.io/merge-cheer/#cases).
 

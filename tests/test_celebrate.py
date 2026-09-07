@@ -460,6 +460,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("Keep credits low", readme)
         self.assertIn("examples/celebrate-openai.yml", html)
         self.assertIn("examples/celebrate-openai.yml", readme)
+        self.assertIn("examples/celebrate-more-openai.yml", html)
+        self.assertIn("examples/celebrate-more-openai.yml", readme)
         self.assertIn("OPENAI_API_KEY", html)
         self.assertIn("e183fbc7b8e395506e627ff60600577dfb5f8f45", html)
         self.assertIn("model: message=", html)
@@ -1008,6 +1010,158 @@ class CelebrateTest(unittest.TestCase):
                 code = celebrate.main()
             self.assertEqual(code, 0)
             self.assertIn("skip: not a cheer moment", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_more_openai_example_is_closed_and_changes(self) -> None:
+        text = (ROOT / "examples" / "celebrate-more-openai.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("pull_request_review", text)
+        self.assertIn("changes_requested", text)
+        self.assertIn("model: gpt-4o-mini", text)
+        self.assertIn("secrets.OPENAI_API_KEY", text)
+        self.assertIn("e183fbc7b8e395506e627ff60600577dfb5f8f45", text)
+        self.assertIn("closed-topic", text)
+        self.assertIn("changes-topic", text)
+        self.assertNotIn("github.event.pull_request.merged &&", text)
+
+    def test_main_uses_model_on_closed_and_keeps_coffee_gif(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "REVIEW_AUTHOR",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["EVENT_NAME"] = "pull_request"
+            os.environ["PR_MERGED"] = "false"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "docs: login help"
+            os.environ["MODEL"] = "gpt-4o-mini"
+            os.environ["MODEL_API_KEY"] = "sk-test"
+            celebrate.list_github_comments = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_commit_messages = lambda *_a, **_k: []  # type: ignore[method-assign]
+
+            def fake_ok(_url, _token, method="GET", payload=None, headers=None):
+                return {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": (
+                                    '{"message": '
+                                    '"Login help still needs a pass — thanks {author}."}'
+                                )
+                            }
+                        }
+                    ]
+                }
+
+            celebrate._http_json = fake_ok  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            out = buf.getvalue()
+            self.assertEqual(code, 0)
+            self.assertIn("Login help still needs a pass — thanks alice.", out)
+            self.assertIn("gifs/coffee/", out)
+            self.assertNotIn("Closed — thank you for the work", out)
+            self.assertNotIn("gifs/yeah/", out)
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_uses_model_on_changes_and_keeps_yeah_gif(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "REVIEW_AUTHOR",
+                "REVIEW_AUTHOR_TYPE",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["REVIEW_STATE"] = "changes_requested"
+            os.environ["REVIEW_AUTHOR"] = "bob"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "docs: login help"
+            os.environ["MODEL"] = "gpt-4o-mini"
+            os.environ["MODEL_API_KEY"] = "sk-test"
+            celebrate.list_github_comments = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_commit_messages = lambda *_a, **_k: []  # type: ignore[method-assign]
+
+            def fake_ok(_url, _token, method="GET", payload=None, headers=None):
+                return {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": (
+                                    '{"message": '
+                                    '"Login help still needs a pass — thanks {author}."}'
+                                )
+                            }
+                        }
+                    ]
+                }
+
+            celebrate._http_json = fake_ok  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            out = buf.getvalue()
+            self.assertEqual(code, 0)
+            self.assertIn("Login help still needs a pass — thanks alice.", out)
+            self.assertIn("gifs/yeah/", out)
+            self.assertNotIn("A bit more work — you have this", out)
+            self.assertNotIn("gifs/coffee/", out)
         finally:
             for key, value in saved.items():
                 if value is None:

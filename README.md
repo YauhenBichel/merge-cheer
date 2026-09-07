@@ -6,7 +6,7 @@ pull request merges.
 [![CI](https://github.com/YauhenBichel/merge-cheer/actions/workflows/ci.yml/badge.svg)](https://github.com/YauhenBichel/merge-cheer/actions/workflows/ci.yml)
 [![Contributors](https://img.shields.io/github/contributors/YauhenBichel/merge-cheer)](https://github.com/YauhenBichel/merge-cheer/graphs/contributors)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-v1.6.0-6e5494)](https://github.com/marketplace/actions/merge-cheer)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-v1.7.0-6e5494)](https://github.com/marketplace/actions/merge-cheer)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 Site: [yauhenbichel.github.io/merge-cheer](https://yauhenbichel.github.io/merge-cheer/) · Marketplace: [merge-cheer](https://github.com/marketplace/actions/merge-cheer)
@@ -29,7 +29,7 @@ file as the [site demo](https://yauhenbichel.github.io/merge-cheer/#demo).
 
 ## Install
 
-Pin `@v1.6.0` (current release). `@v1` is the older first release.
+Pin `@v1.7.0` (current release). `@v1` is the older first release.
 The Action never checks out the pull request head.
 
 ### GitHub
@@ -52,7 +52,7 @@ jobs:
     if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.6.0
+      - uses: YauhenBichel/merge-cheer@v1.7.0
 ```
 
 ### Use a model
@@ -82,20 +82,15 @@ people actually read.
 falls back to the stdlib line.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@e183fbc7b8e395506e627ff60600577dfb5f8f45
+- uses: YauhenBichel/merge-cheer@v1.7.0
   with:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-| Pin | Line |
-| --- | --- |
-| `@v1.6.0` | Current release. GIF plus a model call that can still accept generic thanks |
-| `e183fbc7b8e395506e627ff60600577dfb5f8f45` | GIF plus a model call that drops generic thanks |
-
-Pin that SHA until the next release. A 429 or a junk reply falls back
-to the stdlib line — it is not retried. The Action still does not
-check out the pull request head.
+`@v1.7.0` drops generic thanks. A 429 or a junk reply falls back to
+the stdlib line — it is not retried. The Action still does not check
+out the pull request head.
 
 ### Keep credits low
 
@@ -132,7 +127,7 @@ celebrate:
   image: python:3.13-alpine
   variables:
     TOPIC: auto
-    ACTION_REF: v1.6.0
+    ACTION_REF: v1.7.0
     ACTION_REPO: YauhenBichel/merge-cheer
   script:
     - apk add --no-cache curl
@@ -156,7 +151,7 @@ The Docker Hub pipe is not public. Copy the curl job.
 
 ```yaml
 script:
-  - export ACTION_REF=v1.6.0
+  - export ACTION_REF=v1.7.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
   - export TOPIC="${TOPIC:-auto}"
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
@@ -168,7 +163,7 @@ How to publish a Hub image and Pipes row later: [MARKETPLACES.md](MARKETPLACES.m
 Pin a group:
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.6.0
+- uses: YauhenBichel/merge-cheer@v1.7.0
   with:
     topic: ship   # or party, comic, sunny, game, sticker, yeah
 ```
@@ -201,7 +196,7 @@ Real comments already landed on
 and
 [molecare-desktop #26](https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123).
 
-**How.** Pin `@v1.6.0` on the default branch (see [Install](#install)).
+**How.** Pin `@v1.7.0` on the default branch (see [Install](#install)).
 Leave `topic` unset (or `topic: auto`) for a random theme, seeded by the
 pull request number. Pin `topic: comic` when you want the same mood
 every time.
@@ -261,7 +256,7 @@ Cheer on the default branch.
 [readme-contributors](https://github.com/YauhenBichel/readme-contributors).
 
 To be listed, merge a celebrate workflow that
-`uses: YauhenBichel/merge-cheer@v1.6.0` on the default branch.
+`uses: YauhenBichel/merge-cheer@v1.7.0` on the default branch.
 
 ## Topics
 
@@ -339,7 +334,7 @@ before `qa`. `feat: add python client` still ships.
 | `rating` | `g` | Giphy rating when a key is set |
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.6.0
+- uses: YauhenBichel/merge-cheer@v1.7.0
   with:
     topic: welcome
     giphy-api-key: ${{ secrets.GIPHY_API_KEY }}
@@ -378,7 +373,7 @@ python3 -m unittest discover -s tests -q
 
 ## Publish a release
 
-Current release is `v1.6.0` (`@v1` is the first tag, not a floating
+Current release is `v1.7.0` (`@v1` is the first tag, not a floating
 major). Listed on the [GitHub Marketplace](https://github.com/marketplace/actions/merge-cheer).
 A reviewed Release is tests plus a human review — see [RELEASE.md](RELEASE.md).
 Pushing a tag does not publish. Later releases update the existing listing.

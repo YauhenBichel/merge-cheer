@@ -115,7 +115,7 @@
     <ul class="links">
       <li><a href="https://github.com/YauhenBichel/merge-cheer">GitHub repo</a></li>
       <li><a href="https://github.com/marketplace/actions/merge-cheer">GitHub Marketplace</a></li>
-      <li><a href="https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.6.0">Release v1.6.0</a></li>
+      <li><a href="https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.7.0">Release v1.7.0</a></li>
       <li><a href="#cases">Cases</a></li>
     </ul>
 
@@ -127,7 +127,7 @@
       <li><strong>What.</strong> Merge Cheer comments one G-rated GIF when a human pull request merges. Bots are skipped. The Action does not check out the pull request.</li>
       <li><strong>Why.</strong> The merge is the moment people actually did the work. No Giphy key. The Action ships its own loops, so it works on a new repository with the default token.</li>
       <li><strong>Where.</strong> Code is <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>. Real comments already landed on <a href="https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736">py-harness #350</a> and <a href="https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123">molecare-desktop #26</a>.</li>
-      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.6.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors and reviewers are thanked. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
+      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.7.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors and reviewers are thanked. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
     </ul>
 
     <h2>What happens on merge</h2>
@@ -165,7 +165,7 @@
     <p class="mute">Also on the Action: ship, fix, docs, tests, cleanup, celebration, welcome, party, space, magic, coffee, robot, yeah, sre, qa, design, architecture, engineering, backend, java, cpp. <code>topic: title</code> reads the PR title and body (<code>typo</code> / <code>style</code> / <code>lint</code> / <code>format</code> map to cleanup). A <code>no-cheer</code> or <code>skip-cheer</code> label skips the comment. A second run on the same PR does not post another GIF. <code>locale</code> picks a built-in thank-you (<code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>, <code>uk</code>); a pinned <code>message</code> wins. Unset model keeps the stdlib path.</p>
 
     <h2 id="install">Install</h2>
-    <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.6.0</code> (current release).</p>
+    <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.7.0</code> (current release).</p>
 
     <h3>GitHub</h3>
     <ol class="steps">
@@ -184,9 +184,9 @@ jobs:
     if: github.event.pull_request.merged &amp;&amp; github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.6.0</pre>
+      - uses: YauhenBichel/merge-cheer@v1.7.0</pre>
     <p>Pin a theme when you want the same mood on every merge:</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.6.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
   with:
     topic: comic   # or python, devops, sunny, game, …</pre>
     <p class="mute"><code>@v1</code> is the older first release, not a floating major. An unknown <code>topic</code> falls back to <code>celebration</code>.</p>
@@ -201,7 +201,7 @@ jobs:
   image: python:3.13-alpine
   variables:
     TOPIC: auto
-    ACTION_REF: v1.6.0
+    ACTION_REF: v1.7.0
     ACTION_REPO: YauhenBichel/merge-cheer
   script:
     - apk add --no-cache curl
@@ -216,7 +216,7 @@ jobs:
       <li>Merge a pull request. The step comments the GIF. A job that can see a declined or change-requested PR uses those moments instead.</li>
     </ol>
     <pre>script:
-  - export ACTION_REF=v1.6.0
+  - export ACTION_REF=v1.7.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
   - export TOPIC="${TOPIC:-auto}"
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
@@ -248,11 +248,11 @@ jobs:
       <li>Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-openai.yml">examples/celebrate-openai.yml</a> onto the default branch.</li>
       <li>Merge a human pull request. Read the comment, then the job log for <code>model: message=…</code>.</li>
     </ol>
-    <pre>- uses: YauhenBichel/merge-cheer@e183fbc7b8e395506e627ff60600577dfb5f8f45
+    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
   with:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}</pre>
-    <p class="mute"><code>@v1.6.0</code> is the current release: GIF plus a model call that can still accept generic thanks. The SHA above drops generic thanks. Pin that SHA until the next release. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
+    <p class="mute"><code>@v1.7.0</code> drops generic thanks. A 429 or a junk reply falls back to the stdlib line. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
     <h3 id="credits">Keep credits low</h3>
     <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is random, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
 
@@ -285,7 +285,7 @@ jobs:
       <li><a href="https://github.com/YauhenBichel/python-vibe">YauhenBichel/python-vibe</a></li>
       <li><a href="https://github.com/YauhenBichel/readme-contributors">YauhenBichel/readme-contributors</a></li>
     </ul>
-    <p class="mute">To be listed, merge a celebrate workflow that <code>uses: YauhenBichel/merge-cheer@v1.6.0</code> on the default branch.</p>
+    <p class="mute">To be listed, merge a celebrate workflow that <code>uses: YauhenBichel/merge-cheer@v1.7.0</code> on the default branch.</p>
 
     <footer>
       <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>

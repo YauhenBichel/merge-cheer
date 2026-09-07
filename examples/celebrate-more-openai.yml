@@ -6,8 +6,7 @@
 #   Name: OPENAI_API_KEY
 #   Value: your OpenAI (or OpenAI-compatible) key
 #
-# Pin this SHA until the next Merge Cheer release. @v1.6.0 can call a
-# model, but it still accepts a generic "Thanks {author}."
+# @v1.7.0 drops generic thanks.
 
 name: Celebrate merge
 on:
@@ -30,7 +29,7 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@e183fbc7b8e395506e627ff60600577dfb5f8f45 # specific model lines
+      - uses: YauhenBichel/merge-cheer@v1.7.0
         with:
           model: gpt-4o-mini
           model-api-key: ${{ secrets.OPENAI_API_KEY }}

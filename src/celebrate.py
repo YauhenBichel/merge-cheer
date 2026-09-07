@@ -1109,6 +1109,49 @@ def list_gitlab_notes(token: str, project: str, iid: str) -> list:
     return notes
 
 
+def _requested_changes(entries: object) -> bool:
+    if not isinstance(entries, list):
+        return False
+    for item in entries:
+        if not isinstance(item, dict):
+            continue
+        state = str(
+            item.get("state") or item.get("review_state") or ""
+        ).lower().replace(" ", "_")
+        if state not in {"changes_requested", "requested_changes"}:
+            continue
+        user = item.get("user") if isinstance(item.get("user"), dict) else item
+        login = ""
+        kind = ""
+        if isinstance(user, dict):
+            login = str(
+                user.get("username")
+                or user.get("login")
+                or user.get("nickname")
+                or ""
+            )
+            kind = str(user.get("type") or "")
+        if login and is_bot_author(login, kind):
+            continue
+        return True
+    return False
+
+
+def _gitlab_reviewers(token: str, encoded: str, iid: str) -> list:
+    if not token or not encoded or not iid:
+        return []
+    try:
+        data = _http_json(
+            f"{gitlab_api_root()}/projects/{encoded}/merge_requests/{iid}/reviewers",
+            token,
+            headers=gitlab_headers(token),
+        )
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"reviewers lookup skipped: {exc}", file=sys.stderr)
+        return []
+    return data if isinstance(data, list) else []
+
+
 def lookup_gitlab_mr(token: str) -> dict[str, str]:
     project = os.environ.get("CI_PROJECT_ID", "").strip()
     iid = os.environ.get("CI_MERGE_REQUEST_IID", "").strip()
@@ -1136,7 +1179,17 @@ def lookup_gitlab_mr(token: str) -> dict[str, str]:
     if not isinstance(data, dict) or not data:
         return {}
     state = str(data.get("state") or "").lower()
-    if iid and state and state not in {"merged", "closed"}:
+    review = ""
+    if state == "opened" or (iid and not state):
+        people = data.get("reviewers")
+        number = str(data.get("iid") or iid)
+        if not _requested_changes(people):
+            people = _gitlab_reviewers(token, encoded, number)
+        if _requested_changes(people):
+            review = "changes_requested"
+        elif state == "opened":
+            return {}
+    elif iid and state and state not in {"merged", "closed"}:
         return {}
     user = data.get("author") or {}
     merged = ""
@@ -1153,6 +1206,7 @@ def lookup_gitlab_mr(token: str) -> dict[str, str]:
         if data.get("first_contribution")
         else "",
         "merged": merged,
+        "review": review,
     }
 
 
@@ -1218,7 +1272,13 @@ def lookup_bitbucket_pr(token: str) -> dict[str, str]:
     if not isinstance(data, dict) or not data:
         return {}
     state = str(data.get("state") or "").upper()
-    if state and state not in {"MERGED", "DECLINED", "SUPERSEDED"}:
+    review = ""
+    if state == "OPEN":
+        if _requested_changes(data.get("participants")):
+            review = "changes_requested"
+        else:
+            return {}
+    elif state and state not in {"MERGED", "DECLINED", "SUPERSEDED"}:
         return {}
     author = ((data.get("author") or {}).get("nickname") or "")
     merged = ""
@@ -1233,6 +1293,7 @@ def lookup_bitbucket_pr(token: str) -> dict[str, str]:
         "body": str(data.get("description") or ""),
         "association": "",
         "merged": merged,
+        "review": review,
     }
 
 
@@ -1282,10 +1343,11 @@ def main() -> int:
         number = found.get("number", "")
         pr_body = pr_body or found.get("body", "")
     merged = os.environ.get("PR_MERGED", "") or found.get("merged", "")
+    review = os.environ.get("REVIEW_STATE", "") or found.get("review", "")
     moment = detect_moment(
         os.environ.get("EVENT_NAME", ""),
         merged,
-        os.environ.get("REVIEW_STATE", ""),
+        review,
     )
     if moment is None:
         print("skip: not a cheer moment")

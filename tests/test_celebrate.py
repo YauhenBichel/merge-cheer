@@ -452,7 +452,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("releases/tag/v1.6.0", html)
         self.assertIn("no-cheer", html)
         self.assertIn("reviewers", html)
-        self.assertIn("closed without merge when the job can see that request", html)
+        self.assertIn("closed without merge, or changes requested when the job can see that request", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)
@@ -1167,6 +1167,30 @@ class CelebrateTest(unittest.TestCase):
             declined = celebrate.lookup_bitbucket_pr("token")
             self.assertEqual(declined.get("merged"), "false")
             self.assertEqual(declined.get("number"), "3")
+            celebrate._http_json = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "iid": 8,
+                "state": "opened",
+                "title": "fix: login",
+                "author": {"username": "alice"},
+                "reviewers": [{"username": "cara", "state": "requested_changes"}],
+            }
+            os.environ["CI_MERGE_REQUEST_IID"] = "8"
+            changed = celebrate.lookup_gitlab_mr("token")
+            self.assertEqual(changed.get("review"), "changes_requested")
+            self.assertEqual(changed.get("number"), "8")
+            celebrate._http_json = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "id": 4,
+                "state": "OPEN",
+                "title": "fix: login",
+                "author": {"nickname": "alice"},
+                "participants": [
+                    {"nickname": "cara", "state": "changes_requested"},
+                ],
+            }
+            os.environ["BITBUCKET_PR_ID"] = "4"
+            bb_changes = celebrate.lookup_bitbucket_pr("token")
+            self.assertEqual(bb_changes.get("review"), "changes_requested")
+            self.assertEqual(bb_changes.get("number"), "4")
         finally:
             for key, value in saved.items():
                 if value is None:
@@ -1219,6 +1243,60 @@ class CelebrateTest(unittest.TestCase):
             self.assertNotIn("Merged — thank you", buf.getvalue())
         finally:
             for key, value in env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_uses_yeah_gif_when_gitlab_requests_changes(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "BITBUCKET_REPO_FULL_NAME",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "REVIEW_AUTHOR",
+                "GITHUB_OUTPUT",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["GITLAB_CI"] = "true"
+            os.environ["PR_TITLE"] = "fix: login"
+            celebrate.lookup_gitlab_mr = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "number": "8",
+                "title": "fix: login",
+                "author": "alice",
+                "body": "",
+                "association": "",
+                "merged": "",
+                "review": "changes_requested",
+            }
+            celebrate.list_gitlab_notes = lambda *_a, **_k: []  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("A bit more work — you have this @alice.", buf.getvalue())
+            self.assertIn("gifs/yeah/", buf.getvalue())
+            self.assertNotIn("Merged — thank you", buf.getvalue())
+        finally:
+            for key, value in saved.items():
                 if value is None:
                     os.environ.pop(key, None)
                 else:

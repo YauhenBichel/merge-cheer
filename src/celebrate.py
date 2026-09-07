@@ -1587,7 +1587,8 @@ def main() -> int:
     reviewers: list[str] = []
     if host == "github":
         commit_text = "\n".join(list_pr_commit_messages(token, repo, number))
-        reviewers = list_pr_reviewers(token, repo, number)
+        if moment == "merge":
+            reviewers = list_pr_reviewers(token, repo, number)
     logins = collect_authors(author, pr_body, commit_text, extras=reviewers)
     authors = format_authors(logins)
     group = resolve_group(title, topic, association, number, pr_body)

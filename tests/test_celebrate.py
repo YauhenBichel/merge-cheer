@@ -579,7 +579,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("YauhenBichel/merge-cheer@v1.7.0", html)
         self.assertIn("releases/tag/v1.7.0", html)
         self.assertIn("no-cheer", html)
-        self.assertIn("reviewers", html)
+        self.assertIn("Reviewers are thanked on merge", html)
         self.assertIn("closed without merge, or changes requested when the job can see that request", html)
         self.assertIn("closed or change-requested MR", html)
         self.assertIn("declined or change-requested PR", html)
@@ -934,6 +934,65 @@ class CelebrateTest(unittest.TestCase):
             ["cara", "dan"],
         )
         self.assertEqual(celebrate.list_pr_reviewers("", "org/repo", "12"), [])
+
+    def test_main_thanks_reviewers_only_on_merge(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "REVIEW_AUTHOR",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "fix: login"
+            os.environ["GITHUB_REPOSITORY"] = "org/repo"
+            os.environ["GITHUB_TOKEN"] = "token"
+            celebrate.list_github_comments = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_commit_messages = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_reviewers = lambda *_a, **_k: ["bob"]  # type: ignore[method-assign]
+
+            os.environ["REVIEW_STATE"] = "changes_requested"
+            os.environ["REVIEW_AUTHOR"] = "bob"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("A bit more work — you have this @alice.", buf.getvalue())
+            self.assertNotIn("@bob", buf.getvalue())
+
+            os.environ.pop("REVIEW_STATE", None)
+            os.environ.pop("REVIEW_AUTHOR", None)
+            os.environ["PR_MERGED"] = "true"
+            os.environ["EVENT_NAME"] = "pull_request_target"
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("Merged — thank you @alice and @bob.", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
 
     def test_already_cheered_finds_the_marker(self) -> None:
         celebrate = _load()

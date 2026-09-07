@@ -17,7 +17,7 @@ ships its own GIF groups and, by default, picks a **random theme**
 group with `topic` when you want one mood every time. Use `topic: title`
 to pick from the title and body. A `no-cheer` / `skip-cheer` label (or
 the same words in the title) skips the comment. The Action thanks
-co-authors and reviewers (`{authors}`) and will not post a second GIF for the
+co-authors (`{authors}`) and, on merge, reviewers. It will not post a second GIF for the
 same moment. A changes-requested cheer does not block the merge cheer. Set an OpenAI-compatible `model` and `model-api-key` for
 one G-rated line about what merged; generic thanks fall back to the
 stdlib path.
@@ -342,7 +342,7 @@ before `qa`. `feat: add python client` still ships.
 | `gifs` | empty | Optional https image URLs (comma or newline). Merge only. One is picked, seeded by the pull request number |
 | `gifs-path` | empty | Optional folder on the default branch of `.gif` / `.webp` / `.png` files. Listed via the GitHub API |
 | `note` | empty | Optional extra line after the thank-you (Discord, docs). G-rated. Does not replace `message` |
-| `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds unique human co-authors and reviewers |
+| `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds unique human co-authors, and reviewers on merge |
 | `locale` | `en` | Default thank-you and first-timer language (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja`). Unknown codes fall back to English. A pinned `message` wins |
 | `closed-topic` / `closed-message` | `coffee` / closed thanks | Used when a pull request closes without a merge |
 | `changes-topic` / `changes-message` | `yeah` / more-work line | Used when a reviewer asks for more work |

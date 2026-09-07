@@ -329,7 +329,7 @@ class CelebrateTest(unittest.TestCase):
         )
         self.assertIn("@alice", body)
         self.assertIn("ship-it.gif", body)
-        self.assertIn('width="560"', body)
+        self.assertIn('width="280"', body)
         self.assertIn("<img ", body)
         self.assertIn("<!-- merge-cheer:merge -->", body)
         self.assertNotIn("<!-- merge-cheer -->\n", body)

@@ -14,8 +14,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-# Comments show the 280px GIF at 2×. Rebuilding at 560px blows the 180 KB cap.
-GIF_DISPLAY_WIDTH = 560
+# Files are 280px. Show that size in the comment — 2× was too large.
+GIF_DISPLAY_WIDTH = 280
 
 # Public group names. Users pass these as `topic`.
 GROUPS = (

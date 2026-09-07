@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import random
@@ -12,6 +13,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+# Comments show the 280px GIF at 2×. Rebuilding at 560px blows the 180 KB cap.
+GIF_DISPLAY_WIDTH = 560
 
 # Public group names. Users pass these as `topic`.
 GROUPS = (
@@ -475,7 +479,9 @@ def comment_body(
     if not text.endswith("\n"):
         text += "\n"
     if gif:
-        text += f"\n![{tag}]({gif})\n"
+        src = html.escape(gif, quote=True)
+        alt = html.escape(tag or "celebration", quote=True)
+        text += f'\n<img src="{src}" alt="{alt}" width="{GIF_DISPLAY_WIDTH}" />\n'
     return f"{CHEER_MARKER}\n{text}"
 
 

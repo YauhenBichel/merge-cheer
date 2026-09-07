@@ -314,6 +314,8 @@ class CelebrateTest(unittest.TestCase):
         )
         self.assertIn("@alice", body)
         self.assertIn("ship-it.gif", body)
+        self.assertIn('width="560"', body)
+        self.assertIn("<img ", body)
         self.assertIn("<!-- merge-cheer -->", body)
 
     def test_action_never_checkouts_the_pull_request(self) -> None:
@@ -409,6 +411,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("gifs/python/snake.gif", html)
         self.assertIn("gifs/frontend/browser.gif", html)
         self.assertIn("gifs/golang/gopher.gif", html)
+        self.assertIn("min(560px, 100%)", html)
+        self.assertIn("minmax(21rem, 1fr)", html)
         self.assertIn("topic: python", html)
         self.assertIn("cp docs/merge-cheer-demo.mp4 _site/merge-cheer-demo.mp4", pages)
         self.assertTrue((ROOT / "docs" / "merge-cheer-demo.mp4").is_file())

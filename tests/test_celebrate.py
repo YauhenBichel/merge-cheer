@@ -968,6 +968,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.normalize_locale("it-IT"), "it")
         self.assertEqual(celebrate.normalize_locale("be-BY"), "be")
         self.assertEqual(celebrate.normalize_locale("uk-UA"), "uk")
+        self.assertEqual(celebrate.normalize_locale("ja-JP"), "ja")
         self.assertEqual(celebrate.normalize_locale(""), "en")
         self.assertEqual(
             celebrate.localize_message(
@@ -1006,6 +1007,20 @@ class CelebrateTest(unittest.TestCase):
                 "closed", "Closed — thank you for the work @{author}.", "be"
             ),
             "Закрыта — дзякуй за працу @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "merge", "Merged — thank you @{author}.", "ja"
+            ),
+            "マージしました — ありがとう @{author}。",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "changes",
+                "A bit more work — you have this @{author}.",
+                "ja",
+            ),
+            "もう少し作業を — いける @{author}。",
         )
         self.assertEqual(
             celebrate.localize_message(

@@ -47,7 +47,7 @@ A good first change is one of:
 
 - a title keyword that maps to an **existing** group, plus a test
 - another GIF in `gifs/<group>/` (under 180 KB, G-rated)
-- another `locale` in the static catalog (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be` are there)
+- another `locale` in the static catalog (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja` are there)
 
 Groups today: `ship`, `fix`, `docs`, `tests`, `cleanup`,
 `celebration`, `welcome`, `party`, `space`, `magic`, `coffee`, `robot`,

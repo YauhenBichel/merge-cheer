@@ -556,6 +556,12 @@ class CelebrateTest(unittest.TestCase):
         self.assertNotIn("DevBox/", notes)
         self.assertIn("marketplace/actions/merge-cheer", notes)
         self.assertIn("marketplace=true", notes)
+        self.assertIn("docs/marketplace.png", notes)
+        self.assertIn("Settings → Actions", notes)
+        self.assertIn("Publish this Action to the GitHub Marketplace", notes)
+        shot = ROOT / "docs" / "marketplace.png"
+        self.assertTrue(shot.is_file())
+        self.assertLess(shot.stat().st_size, 500 * 1024)
 
     def test_contributors_push_does_not_add_missing_readme_names(self) -> None:
         """Ubuntu git is case-sensitive; `git add` of a missing path exits 128."""

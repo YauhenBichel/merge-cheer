@@ -48,7 +48,13 @@ from automation.
 
 Listing: https://github.com/marketplace/actions/merge-cheer
 
-The first publish is a browser + 2FA step (no API). Prefer:
+The listing form needs a G-rated screenshot of a real merge comment
+that uses a bundled GIF. Use [docs/marketplace.png](docs/marketplace.png)
+(the [live #53 comment](https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316)).
+
+The first publish is a browser + 2FA step (no API). Prefer
+Settings → Actions → **Publish this Action to the GitHub Marketplace**,
+or:
 
 https://github.com/YauhenBichel/merge-cheer/releases/edit/v1.6.0?marketplace=true
 

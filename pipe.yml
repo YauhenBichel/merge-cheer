@@ -20,7 +20,7 @@ variables:
     default: "Merged — thank you @{author}."
   - name: LOCALE
     default: en
-    description: Default thank-you language. en, es, de, fr, pt, uk. Unknown codes fall back to English.
+    description: Default thank-you language. en, es, de, fr, pt, uk, it. Unknown codes fall back to English.
   - name: ACTION_REF
     default: v1.7.0
   - name: GIPHY_API_KEY

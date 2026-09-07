@@ -33,7 +33,7 @@ inputs:
   locale:
     description: >
       Language for the default thank-you when message is unset.
-      en, es, de, fr, pt, uk. Unknown codes fall back to English.
+      en, es, de, fr, pt, uk, it. Unknown codes fall back to English.
       A pinned message, closed-message, or changes-message still wins.
     required: false
     default: "en"

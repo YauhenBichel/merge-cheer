@@ -965,6 +965,7 @@ class CelebrateTest(unittest.TestCase):
     def test_locale_picks_a_catalog_line_and_falls_back(self) -> None:
         celebrate = _load()
         self.assertEqual(celebrate.normalize_locale("es-ES"), "es")
+        self.assertEqual(celebrate.normalize_locale("it-IT"), "it")
         self.assertEqual(celebrate.normalize_locale(""), "en")
         self.assertEqual(
             celebrate.localize_message(
@@ -977,6 +978,20 @@ class CelebrateTest(unittest.TestCase):
                 "closed", "Closed — thank you for the work @{author}.", "uk"
             ),
             "Закрито — дякую за роботу @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "merge", "Merged — thank you @{author}.", "it"
+            ),
+            "Unito — grazie @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "changes",
+                "A bit more work — you have this @{author}.",
+                "it",
+            ),
+            "Ancora un po' di lavoro — ce la fai @{author}.",
         )
         self.assertEqual(
             celebrate.localize_message(

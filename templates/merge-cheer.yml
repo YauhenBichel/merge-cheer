@@ -8,7 +8,7 @@ spec:
       description: Comment text. `{author}` becomes the merge request author.
     locale:
       default: en
-      description: Default thank-you language. en, es, de, fr, pt, uk. Unknown codes fall back to English.
+      description: Default thank-you language. en, es, de, fr, pt, uk, it. Unknown codes fall back to English.
     action_ref:
       default: v1.7.0
       description: merge-cheer tag used to download celebrate.py and GIF URLs.

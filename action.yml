@@ -33,9 +33,10 @@ inputs:
     description: >
       Optional chat model. Empty keeps the stdlib path. Set an
       OpenAI-compatible model name with model-api-key. The model
-      writes only the thank-you line; the GIF group stays from the
-      title map. The line must be about the pull request; generic
-      thanks are ignored.
+      writes only the thank-you line. The GIF group stays from
+      topic: auto is a random theme, title reads the PR title and
+      body. The line must be about the pull request; generic thanks
+      are ignored.
     required: false
     default: ""
   model-api-key:

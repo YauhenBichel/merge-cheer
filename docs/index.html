@@ -116,6 +116,7 @@
       <li><a href="https://github.com/YauhenBichel/merge-cheer">GitHub repo</a></li>
       <li><a href="https://github.com/marketplace/actions/merge-cheer">GitHub Marketplace</a></li>
       <li><a href="https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.6.0">Release v1.6.0</a></li>
+      <li><a href="#cases">Cases</a></li>
     </ul>
 
     <h2 id="demo">Watch the demo</h2>
@@ -220,9 +221,10 @@ jobs:
     <video class="demo-video" src="merge-cheer-ai-demo.mp4" poster="merge-cheer-ai-demo-poster.png" controls muted playsinline width="1080" height="1080">
       <a href="merge-cheer-ai-demo.mp4">Download the 20s AI demo</a>
     </video>
-    <p>A human pull request merges. The model writes one short line about what landed. The GIF group still comes from the title. “Thanks” is empty. A line that names the work is the cheer people actually read.</p>
+    <p class="mute">This is the model path. Zero-config is still <code>Merged — thank you @author</code>.</p>
+    <p>A human pull request merges. The model writes one short line about what landed. The GIF group still comes from <code>topic</code>. Default <code>auto</code> is a random theme. Set <code>topic: title</code> to use the title map. “Thanks” is empty. A line that names the work is the cheer people actually read.</p>
     <ul class="why">
-      <li><strong>What.</strong> One line about the work. The GIF still comes from the title map.</li>
+      <li><strong>What.</strong> One line about the work. The GIF still comes from <code>topic</code>, not from the model.</li>
       <li><strong>Why.</strong> Generic thanks is not a cheer people keep.</li>
       <li><strong>How.</strong> One secret. <code>model: gpt-4o-mini</code>. One call per merge. A 429 falls back to the stdlib line.</li>
     </ul>
@@ -244,9 +246,22 @@ jobs:
   with:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}</pre>
-    <p class="mute">Pin that SHA until the next release. <code>@v1.6.0</code> can call a model but still accepts a generic thanks. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
+    <p class="mute"><code>@v1.6.0</code> is the current release: GIF plus a model call that can still accept generic thanks. The SHA above drops generic thanks. Pin that SHA until the next release. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
     <h3 id="credits">Keep credits low</h3>
-    <p>The model writes only the thank-you line. The GIF group still comes from the title map. One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
+    <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is random, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
+
+    <h2 id="cases">Cases</h2>
+    <p>The Action already handles these. The videos above are two of them.</p>
+    <ul class="why">
+      <li><strong>Zero-config merge.</strong> <code>Merged — thank you @alice</code> plus a GIF. Default <code>topic: auto</code> is a random group, seeded by the pull request number.</li>
+      <li><strong>Model merge.</strong> Live on <a href="https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316">#53</a>. The model writes the line. The GIF still comes from <code>topic</code>, not from the model.</li>
+      <li><strong>Closed without merge.</strong> <code>Closed — thank you for the work</code>. <code>closed-topic</code> defaults to coffee. Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-more.yml">examples/celebrate-more.yml</a>.</li>
+      <li><strong>Changes requested.</strong> <code>A bit more work — you have this</code>. <code>changes-topic</code> defaults to yeah. Same example file.</li>
+      <li><strong><code>topic: title</code>.</strong> Reads the PR title and body. Conventional types beat mood words. First-timers can get welcome.</li>
+      <li><strong>Pinned topic.</strong> <code>topic: python</code> (or comic, devops, …) on every merge.</li>
+      <li><strong>Skip.</strong> Bot author, bot reviewer, <code>no-cheer</code> / <code>skip-cheer</code>, or a second run on the same GitHub pull request.</li>
+      <li><strong>GitLab / Bitbucket.</strong> Merge-only. A second pipeline can post again. Curl until Catalog or Pipes exist.</li>
+    </ul>
 
     <h2>Used by</h2>
     <p>8 public repositories already run Merge Cheer on the default branch, pinned to <code>@v1.6.0</code>.</p>

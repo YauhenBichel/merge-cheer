@@ -68,8 +68,12 @@ pull request!*
 
 20 seconds. What the model writes, then the GIF.
 
+This is the model path. Zero-config is still `Merged — thank you
+@author`.
+
 **What.** A human pull request merges. The model writes one short line
-about what landed. The GIF group still comes from the title.
+about what landed. The GIF group still comes from `topic`. Default
+`auto` is a random theme. Set `topic: title` to use the title map.
 
 **Why.** “Thanks” is empty. A line that names the work is the cheer
 people actually read.
@@ -84,24 +88,29 @@ falls back to the stdlib line.
     model-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Pin that SHA until the next release. `@v1.6.0` can call a model but
-still accepts a generic thanks. A 429 or a junk reply falls back to
-the stdlib line — it is not retried. The Action still does not check
-out the pull request head.
+| Pin | Line |
+| --- | --- |
+| `@v1.6.0` | Current release. GIF plus a model call that can still accept generic thanks |
+| `e183fbc7b8e395506e627ff60600577dfb5f8f45` | GIF plus a model call that drops generic thanks |
+
+Pin that SHA until the next release. A 429 or a junk reply falls back
+to the stdlib line — it is not retried. The Action still does not
+check out the pull request head.
 
 ### Keep credits low
 
-The model writes only the thank-you line. The GIF group still comes
-from the title map (`topic: title` / `auto`). One call per merge, then
-skip if that pull request already has a cheer. Use `gpt-4o-mini`. A
-bigger model does not help one sentence. Pin `message` when you do
+The model writes only the thank-you line. The GIF group stays from
+`topic` (`auto` is random, `title` is the map). One call per merge,
+then skip if that pull request already has a cheer. Use `gpt-4o-mini`.
+A bigger model does not help one sentence. Pin `message` when you do
 not want a model call.
 
 Also comment when a pull request **closes without a merge**, or when a
 reviewer asks for **more work**. Tone stays kind. Copy
 [examples/celebrate-more.yml](examples/celebrate-more.yml). Close uses
 the `coffee` group. A changes request uses `yeah`. The Action never
-checks out the pull request head.
+checks out the pull request head. The full case list is on the
+[site](https://yauhenbichel.github.io/merge-cheer/#cases).
 
 ### GitLab
 
@@ -223,7 +232,7 @@ yet — that workflow is what will write it.
 
 ## Used by
 
-6 public repositories already run Merge Cheer on the default branch.
+8 public repositories already run Merge Cheer on the default branch.
 
 **MoleCare:** [molecare-mcp](https://github.com/MoleCare/molecare-mcp),
 [molecare-ml](https://github.com/MoleCare/molecare-ml),
@@ -231,7 +240,9 @@ yet — that workflow is what will write it.
 [molecare-skin-llm](https://github.com/MoleCare/molecare-skin-llm),
 [.github](https://github.com/MoleCare/.github).
 
-**Personal:** [readme-contributors](https://github.com/YauhenBichel/readme-contributors).
+**Also:** [py-harness](https://github.com/YauhenBichel/py-harness),
+[python-vibe](https://github.com/YauhenBichel/python-vibe),
+[readme-contributors](https://github.com/YauhenBichel/readme-contributors).
 
 To be listed, merge a celebrate workflow that
 `uses: YauhenBichel/merge-cheer@v1.6.0` on the default branch.
@@ -304,7 +315,7 @@ before `qa`. `feat: add python client` still ships.
 | `message` | `Merged — thank you @{author}.` | `{author}` is the PR author; `{authors}` adds unique human co-authors |
 | `closed-topic` / `closed-message` | `coffee` / closed thanks | Used when a pull request closes without a merge |
 | `changes-topic` / `changes-message` | `yeah` / more-work line | Used when a reviewer asks for more work |
-| `model` | empty | Optional chat model for the thank-you line only. GIF group stays from the title map |
+| `model` | empty | Optional chat model for the thank-you line only. GIF group stays from `topic` (`auto` is random, `title` is the map) |
 | `model-api-key` | empty | Optional OpenAI-compatible key. Unset keeps the stdlib path |
 | `model-base-url` | empty | Optional OpenAI-compatible API root |
 | `rating` | `g` | Giphy rating when a key is set |
@@ -388,4 +399,4 @@ Thank you to everyone who has helped.
 <p align="center"><em>The contributors of the merge-cheer project include Yauhen Bichel, HeaTTap, and Soumya Padhi.</em></p>
 <!-- readme: contributors,bots/- -end -->
 
-Filled from GitHub commits (bots omitted). Live demo: [readme-contributors](https://github.com/YauhenBichel/readme-contributors#live-demo).
+Filled from the GitHub contributors API (bots omitted). Live demo: [readme-contributors](https://github.com/YauhenBichel/readme-contributors#live-demo).

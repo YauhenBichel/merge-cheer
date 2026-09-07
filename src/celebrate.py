@@ -1135,10 +1135,15 @@ def lookup_gitlab_mr(token: str) -> dict[str, str]:
         return {}
     if not isinstance(data, dict) or not data:
         return {}
-    if str(data.get("state") or "") not in {"merged", ""}:
-        if iid and str(data.get("state") or "") != "merged":
-            return {}
+    state = str(data.get("state") or "").lower()
+    if iid and state and state not in {"merged", "closed"}:
+        return {}
     user = data.get("author") or {}
+    merged = ""
+    if state == "merged":
+        merged = "true"
+    elif state == "closed":
+        merged = "false"
     return {
         "number": str(data.get("iid") or iid),
         "title": str(data.get("title") or ""),
@@ -1147,6 +1152,7 @@ def lookup_gitlab_mr(token: str) -> dict[str, str]:
         "association": "FIRST_TIME_CONTRIBUTOR"
         if data.get("first_contribution")
         else "",
+        "merged": merged,
     }
 
 
@@ -1212,15 +1218,21 @@ def lookup_bitbucket_pr(token: str) -> dict[str, str]:
     if not isinstance(data, dict) or not data:
         return {}
     state = str(data.get("state") or "").upper()
-    if state and state != "MERGED":
+    if state and state not in {"MERGED", "DECLINED", "SUPERSEDED"}:
         return {}
     author = ((data.get("author") or {}).get("nickname") or "")
+    merged = ""
+    if state == "MERGED":
+        merged = "true"
+    elif state in {"DECLINED", "SUPERSEDED"}:
+        merged = "false"
     return {
         "number": str(data.get("id") or number),
         "title": str(data.get("title") or ""),
         "author": str(author),
         "body": str(data.get("description") or ""),
         "association": "",
+        "merged": merged,
     }
 
 
@@ -1247,6 +1259,7 @@ def main() -> int:
     number = os.environ.get("PR_NUMBER", "").strip()
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    found: dict[str, str] = {}
     if host == "gitlab" and not number:
         found = lookup_gitlab_mr(
             (
@@ -1268,9 +1281,10 @@ def main() -> int:
         author = author or found.get("author", "")
         number = found.get("number", "")
         pr_body = pr_body or found.get("body", "")
+    merged = os.environ.get("PR_MERGED", "") or found.get("merged", "")
     moment = detect_moment(
         os.environ.get("EVENT_NAME", ""),
-        os.environ.get("PR_MERGED", ""),
+        merged,
         os.environ.get("REVIEW_STATE", ""),
     )
     if moment is None:

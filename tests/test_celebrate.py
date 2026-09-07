@@ -452,6 +452,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("releases/tag/v1.6.0", html)
         self.assertIn("no-cheer", html)
         self.assertIn("reviewers", html)
+        self.assertIn("closed without merge when the job can see that request", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)
@@ -1111,6 +1112,113 @@ class CelebrateTest(unittest.TestCase):
             self.assertIn("skip: already cheered", buf.getvalue())
         finally:
             for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_gitlab_and_bitbucket_can_cheer_a_closed_request(self) -> None:
+        celebrate = _load()
+        self.assertEqual(celebrate.detect_moment("", "true"), "merge")
+        self.assertEqual(celebrate.detect_moment("", "false"), "closed")
+        self.assertEqual(celebrate.detect_moment("", ""), "merge")
+        celebrate._http_json = lambda *_a, **_k: {  # type: ignore[method-assign]
+            "iid": 9,
+            "state": "closed",
+            "title": "fix: login",
+            "author": {"username": "alice"},
+            "description": "",
+        }
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "CI_PROJECT_ID",
+                "CI_MERGE_REQUEST_IID",
+                "CI_COMMIT_SHA",
+                "BITBUCKET_WORKSPACE",
+                "BITBUCKET_REPO_SLUG",
+                "BITBUCKET_PR_ID",
+                "BITBUCKET_COMMIT",
+            )
+        }
+        try:
+            os.environ["CI_PROJECT_ID"] = "1"
+            os.environ["CI_MERGE_REQUEST_IID"] = "9"
+            found = celebrate.lookup_gitlab_mr("token")
+            self.assertEqual(found.get("merged"), "false")
+            self.assertEqual(found.get("number"), "9")
+            celebrate._http_json = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "iid": 9,
+                "state": "opened",
+                "title": "fix: login",
+                "author": {"username": "alice"},
+            }
+            self.assertEqual(celebrate.lookup_gitlab_mr("token"), {})
+            os.environ["BITBUCKET_WORKSPACE"] = "acme"
+            os.environ["BITBUCKET_REPO_SLUG"] = "app"
+            os.environ["BITBUCKET_PR_ID"] = "3"
+            celebrate._http_json = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "id": 3,
+                "state": "DECLINED",
+                "title": "fix: login",
+                "author": {"nickname": "alice"},
+                "description": "",
+            }
+            declined = celebrate.lookup_bitbucket_pr("token")
+            self.assertEqual(declined.get("merged"), "false")
+            self.assertEqual(declined.get("number"), "3")
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        env = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "GITHUB_ACTIONS",
+                "GITLAB_CI",
+                "BITBUCKET_COMMIT",
+                "BITBUCKET_REPO_FULL_NAME",
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "EVENT_NAME",
+                "PR_MERGED",
+                "REVIEW_STATE",
+                "GITHUB_OUTPUT",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["GITLAB_CI"] = "true"
+            os.environ["PR_TITLE"] = "fix: login"
+            celebrate.lookup_gitlab_mr = lambda *_a, **_k: {  # type: ignore[method-assign]
+                "number": "9",
+                "title": "fix: login",
+                "author": "alice",
+                "body": "",
+                "association": "",
+                "merged": "false",
+            }
+            celebrate.list_gitlab_notes = lambda *_a, **_k: []  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("Closed — thank you for the work @alice.", buf.getvalue())
+            self.assertIn("gifs/coffee/", buf.getvalue())
+            self.assertNotIn("Merged — thank you", buf.getvalue())
+        finally:
+            for key, value in env.items():
                 if value is None:
                     os.environ.pop(key, None)
                 else:

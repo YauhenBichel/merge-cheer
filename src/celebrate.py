@@ -1114,6 +1114,40 @@ def title_tokens(title: str) -> set[str]:
     return {word for word in words if word not in _TITLE_STOP}
 
 
+def title_hint(title: str) -> str:
+    """First specific word from the title for the stdlib thank-you."""
+    for word in re.findall(r"[a-z0-9]{4,}", (title or "").lower()):
+        if word in _TITLE_STOP:
+            continue
+        if not is_grated(word):
+            continue
+        return word
+    return ""
+
+
+def with_title_hint(
+    message: str,
+    title: str,
+    locale: str = "en",
+    moment: str = "merge",
+) -> str:
+    """Put one title word in the default thank-you. Pinned copy is unchanged."""
+    text = message or ""
+    hint = title_hint(title)
+    if not hint or hint in text.lower() or " — " not in text:
+        return text
+    loc = normalize_locale(locale)
+    if loc == "en" and moment == "changes":
+        insert = f" on {hint} — "
+    elif loc == "en":
+        insert = f" the {hint} — "
+    elif loc == "ja":
+        insert = f"（{hint}） — "
+    else:
+        insert = f" {hint} — "
+    return text.replace(" — ", insert, 1)
+
+
 def cheer_is_specific(title: str, message: str) -> bool:
     line = (message or "").strip()
     if not is_grated(line):
@@ -1599,6 +1633,12 @@ def main() -> int:
         else:
             message = localize_message(
                 moment, message, os.environ.get("LOCALE", "")
+            )
+            message = with_title_hint(
+                message,
+                title,
+                os.environ.get("LOCALE", ""),
+                moment,
             )
     root = action_root()
     group, name = choose_gif(root, group, number)

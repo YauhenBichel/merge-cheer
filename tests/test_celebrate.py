@@ -569,6 +569,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("GIF on merge", html)
         self.assertIn("What happens on merge", html)
         self.assertIn("Merged — thank you @alice", html)
+        self.assertIn("Merged the readme", html)
+        self.assertIn("Merged the readme", readme)
         self.assertIn("random theme", html)
         self.assertIn("random theme", readme)
         self.assertIn("topic: title", readme)
@@ -975,7 +977,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("A bit more work — you have this @alice.", buf.getvalue())
+            self.assertIn("A bit more work on login — you have this @alice.", buf.getvalue())
             self.assertNotIn("@bob", buf.getvalue())
 
             os.environ.pop("REVIEW_STATE", None)
@@ -986,7 +988,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("Merged — thank you @alice and @bob.", buf.getvalue())
+            self.assertIn("Merged the login — thank you @alice and @bob.", buf.getvalue())
         finally:
             for key, value in saved.items():
                 if value is None:
@@ -1222,6 +1224,48 @@ class CelebrateTest(unittest.TestCase):
             celebrate.localize_message("merge", "Shipped. Thank you @{author}.", "es"),
             "Shipped. Thank you @{author}.",
         )
+
+    def test_stdlib_line_names_a_title_word(self) -> None:
+        celebrate = _load()
+        self.assertEqual(celebrate.title_hint("docs: readme pass"), "readme")
+        self.assertEqual(celebrate.title_hint("fix: ci"), "")
+        self.assertEqual(celebrate.title_hint("fix: nsfw"), "")
+        self.assertEqual(
+            celebrate.with_title_hint(
+                "Merged — thank you @{author}.",
+                "docs: readme",
+                "en",
+                "merge",
+            ),
+            "Merged the readme — thank you @{author}.",
+        )
+        self.assertEqual(
+            celebrate.with_title_hint(
+                "A bit more work — you have this @{author}.",
+                "fix: login",
+                "en",
+                "changes",
+            ),
+            "A bit more work on login — you have this @{author}.",
+        )
+        self.assertEqual(
+            celebrate.with_title_hint(
+                "Fusionado — gracias @{author}.",
+                "docs: readme",
+                "es",
+                "merge",
+            ),
+            "Fusionado readme — gracias @{author}.",
+        )
+        self.assertEqual(
+            celebrate.with_title_hint(
+                "Shipped. Thank you @{author}.",
+                "docs: readme",
+                "en",
+                "merge",
+            ),
+            "Shipped. Thank you @{author}.",
+        )
         self.assertEqual(celebrate.LOCALES["en"], celebrate.DEFAULT_MESSAGES)
         for code, pack in celebrate.LOCALES.items():
             self.assertEqual(set(pack), set(celebrate.DEFAULT_MESSAGES), code)
@@ -1260,7 +1304,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("Fusionado — gracias @alice.", buf.getvalue())
+            self.assertIn("Fusionado login — gracias @alice.", buf.getvalue())
             self.assertNotIn("Merged — thank you @alice.", buf.getvalue())
         finally:
             for key, value in saved.items():
@@ -1335,7 +1379,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("Merged — thank you @alice.", buf.getvalue())
+            self.assertIn("Merged the login — thank you @alice.", buf.getvalue())
             self.assertIn(".gif", buf.getvalue())
             self.assertIn("<!-- merge-cheer:merge -->", buf.getvalue())
 
@@ -1347,7 +1391,7 @@ class CelebrateTest(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("https://example.test/team/ship.gif", buf.getvalue())
             self.assertIn("Come hang out on Discord — https://discord.gg/your-invite", buf.getvalue())
-            self.assertIn("Merged — thank you @alice.", buf.getvalue())
+            self.assertIn("Merged the login — thank you @alice.", buf.getvalue())
 
             os.environ.pop("CUSTOM_GIFS", None)
             os.environ.pop("NOTE", None)
@@ -1358,7 +1402,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("Merged — thank you @alice.", buf.getvalue())
+            self.assertIn("Merged the login — thank you @alice.", buf.getvalue())
             self.assertNotIn("skip: already cheered", buf.getvalue())
         finally:
             for key, value in saved.items():
@@ -1549,7 +1593,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("Closed — thank you for the work @alice.", buf.getvalue())
+            self.assertIn("Closed the login — thank you for the work @alice.", buf.getvalue())
             self.assertIn("gifs/coffee/", buf.getvalue())
             self.assertNotIn("Merged — thank you", buf.getvalue())
         finally:
@@ -1603,7 +1647,7 @@ class CelebrateTest(unittest.TestCase):
             with redirect_stdout(buf):
                 code = celebrate.main()
             self.assertEqual(code, 0)
-            self.assertIn("A bit more work — you have this @alice.", buf.getvalue())
+            self.assertIn("A bit more work on login — you have this @alice.", buf.getvalue())
             self.assertIn("gifs/yeah/", buf.getvalue())
             self.assertNotIn("Merged — thank you", buf.getvalue())
         finally:

@@ -72,7 +72,8 @@ request head.
 
 ### Use a model
 
-Zero-config stays `Merged — thank you @author`. Add repository secret
+Zero-config stays `Merged — thank you @author`, or `Merged the readme
+— thank you @author` when the title has a usable word. Add repository secret
 `OPENAI_API_KEY` and copy
 [examples/celebrate-openai.yml](examples/celebrate-openai.yml). Live
 demo: [merge-cheer #53](https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316)

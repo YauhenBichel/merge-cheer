@@ -17,8 +17,8 @@ ships its own GIF groups and, by default, picks a **random theme**
 group with `topic` when you want one mood every time. Use `topic: title`
 to pick from the title and body. A `no-cheer` / `skip-cheer` label (or
 the same words in the title) skips the comment. The Action thanks
-co-authors and reviewers (`{authors}`) and will not post a second GIF on the same
-pull request or merge request. Set an OpenAI-compatible `model` and `model-api-key` for
+co-authors and reviewers (`{authors}`) and will not post a second GIF for the
+same moment. A changes-requested cheer does not block the merge cheer. Set an OpenAI-compatible `model` and `model-api-key` for
 one G-rated line about what merged; generic thanks fall back to the
 stdlib path.
 

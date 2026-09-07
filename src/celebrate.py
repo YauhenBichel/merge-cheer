@@ -450,6 +450,7 @@ def giphy_url(key: str, tag: str, rating: str) -> str:
 
 
 CHEER_MARKER = "<!-- merge-cheer -->"
+CHEER_MOMENTS = frozenset({"merge", "closed", "changes"})
 SKIP_LABELS = frozenset({"no-cheer", "skip-cheer"})
 _COAUTHOR_LINE = re.compile(r"(?im)^[ \t]*co-authored-by:[ \t]+(.+)$")
 _GITHUB_NOREPLY = re.compile(
@@ -514,6 +515,14 @@ def ensure_mention(text: str, login: str) -> str:
     return f"{text}@{who}\n"
 
 
+def cheer_marker(moment: str = "merge") -> str:
+    """HTML comment that marks this moment so a later moment can still post."""
+    name = (moment or "merge").strip().lower()
+    if name not in CHEER_MOMENTS:
+        name = "merge"
+    return f"<!-- merge-cheer:{name} -->"
+
+
 def comment_body(
     message: str,
     author: str,
@@ -522,6 +531,7 @@ def comment_body(
     authors: str = "",
     association: str = "",
     locale: str = "",
+    moment: str = "merge",
 ) -> str:
     who = (author or "").lstrip("@")
     named = authors or (f"@{who}" if who else "")
@@ -546,7 +556,7 @@ def comment_body(
         src = html.escape(gif, quote=True)
         alt = html.escape(tag or "celebration", quote=True)
         text += f'\n<img src="{src}" alt="{alt}" width="{GIF_DISPLAY_WIDTH}" />\n'
-    return f"{CHEER_MARKER}\n{text}"
+    return f"{cheer_marker(moment)}\n{text}"
 
 
 DEFAULT_MESSAGES = {
@@ -766,11 +776,31 @@ def collect_authors(
     return people
 
 
-def already_cheered(comments: object) -> bool:
+def already_cheered(comments: object, moment: str = "merge") -> bool:
+    """True when this moment already has a cheer.
+
+    Legacy comments used ``<!-- merge-cheer -->`` with no moment. Treat those
+    as a merge cheer so a re-run does not post a second merge GIF. A
+    changes or closed cheer uses ``<!-- merge-cheer:changes -->`` /
+    ``<!-- merge-cheer:closed -->`` and does not block merge.
+    """
     if not isinstance(comments, list):
         return False
+    name = (moment or "merge").strip().lower()
+    if name not in CHEER_MOMENTS:
+        name = "merge"
+    wanted = cheer_marker(name)
     for item in comments:
-        if isinstance(item, dict) and CHEER_MARKER in str(item.get("body") or ""):
+        if not isinstance(item, dict):
+            continue
+        body = str(item.get("body") or "")
+        if wanted in body:
+            return True
+        if (
+            name == "merge"
+            and CHEER_MARKER in body
+            and "<!-- merge-cheer:" not in body
+        ):
             return True
     return False
 
@@ -1437,7 +1467,7 @@ def main() -> int:
             os.environ.get("BITBUCKET_REPO_SLUG", "").strip(),
             number,
         )
-    if existing and already_cheered(existing):
+    if existing and already_cheered(existing, moment):
         print("skip: already cheered")
         return 0
     topic = moment_topic(
@@ -1491,6 +1521,7 @@ def main() -> int:
         authors,
         association,
         os.environ.get("LOCALE", ""),
+        moment,
     )
     write_output(
         os.environ.get("GITHUB_OUTPUT", ""),

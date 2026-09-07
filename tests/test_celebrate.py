@@ -331,7 +331,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("ship-it.gif", body)
         self.assertIn('width="560"', body)
         self.assertIn("<img ", body)
-        self.assertIn("<!-- merge-cheer -->", body)
+        self.assertIn("<!-- merge-cheer:merge -->", body)
+        self.assertNotIn("<!-- merge-cheer -->\n", body)
         self.assertNotIn("First contribution — welcome.", body)
 
     def test_comment_tags_the_author_for_a_notification(self) -> None:
@@ -563,6 +564,8 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("id=\"ai\"", html)
         self.assertIn("id=\"cases\"", html)
         self.assertIn("does not post another GIF", html)
+        self.assertIn("does not block the merge cheer", html)
+        self.assertIn("does not block the merge cheer", readme)
         self.assertNotIn("A second pipeline can post again", html)
         self.assertIn("8 public repositories", html)
         self.assertIn("8 public repositories", readme)
@@ -826,7 +829,7 @@ class CelebrateTest(unittest.TestCase):
             "@alice and @bob",
         )
         self.assertIn("@alice and @bob", body)
-        self.assertIn("<!-- merge-cheer -->", body)
+        self.assertIn("<!-- merge-cheer:merge -->", body)
 
     def test_reviewers_join_the_author_list(self) -> None:
         celebrate = _load()
@@ -851,13 +854,36 @@ class CelebrateTest(unittest.TestCase):
 
     def test_already_cheered_finds_the_marker(self) -> None:
         celebrate = _load()
-        self.assertTrue(
-            celebrate.already_cheered(
-                [{"body": "<!-- merge-cheer -->\nMerged — thank you @alice.\n"}]
-            )
-        )
+        legacy = [{"body": "<!-- merge-cheer -->\nMerged — thank you @alice.\n"}]
+        changes = [{"body": "<!-- merge-cheer:changes -->\nA bit more work — you have this @alice.\n"}]
+        closed = [{"body": "<!-- merge-cheer:closed -->\nClosed — thank you for the work @alice.\n"}]
+        merge = [{"body": "<!-- merge-cheer:merge -->\nMerged — thank you @alice.\n"}]
+        self.assertTrue(celebrate.already_cheered(legacy))
+        self.assertTrue(celebrate.already_cheered(legacy, "merge"))
+        self.assertFalse(celebrate.already_cheered(legacy, "changes"))
+        self.assertFalse(celebrate.already_cheered(legacy, "closed"))
+        self.assertTrue(celebrate.already_cheered(merge, "merge"))
+        self.assertFalse(celebrate.already_cheered(merge, "changes"))
+        self.assertTrue(celebrate.already_cheered(changes, "changes"))
+        self.assertFalse(celebrate.already_cheered(changes, "merge"))
+        self.assertTrue(celebrate.already_cheered(closed, "closed"))
+        self.assertFalse(celebrate.already_cheered(closed, "merge"))
         self.assertFalse(celebrate.already_cheered([{"body": "nice work"}]))
         self.assertFalse(celebrate.already_cheered([]))
+        self.assertEqual(
+            celebrate.cheer_marker("changes"),
+            "<!-- merge-cheer:changes -->",
+        )
+        self.assertIn(
+            "<!-- merge-cheer:changes -->",
+            celebrate.comment_body(
+                "A bit more work — you have this @{author}.",
+                "alice",
+                "yeah",
+                "https://example.test/yeah/pump.gif",
+                moment="changes",
+            ),
+        )
 
     def test_model_accepts_allowed_group_and_rejects_junk(self) -> None:
         celebrate = _load()
@@ -1167,7 +1193,17 @@ class CelebrateTest(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("Merged — thank you @alice.", buf.getvalue())
             self.assertIn(".gif", buf.getvalue())
-            self.assertIn("<!-- merge-cheer -->", buf.getvalue())
+            self.assertIn("<!-- merge-cheer:merge -->", buf.getvalue())
+
+            celebrate.list_github_comments = lambda *_a, **_k: [  # type: ignore[method-assign]
+                {"body": "<!-- merge-cheer:changes -->\nA bit more work — you have this @alice.\n"}
+            ]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("Merged — thank you @alice.", buf.getvalue())
+            self.assertNotIn("skip: already cheered", buf.getvalue())
         finally:
             for key, value in saved.items():
                 if value is None:

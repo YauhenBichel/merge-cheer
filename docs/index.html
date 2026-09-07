@@ -162,7 +162,7 @@
       <figure><img src="gifs/frontend/browser.gif" alt="frontend GIF"><figcaption>frontend</figcaption></figure>
       <figure><img src="gifs/golang/gopher.gif" alt="golang GIF"><figcaption>golang</figcaption></figure>
     </div>
-    <p class="mute">Also on the Action: ship, fix, docs, tests, cleanup, celebration, welcome, party, space, magic, coffee, robot, yeah, sre, qa, design, architecture, engineering, backend, java, cpp. <code>topic: title</code> reads the PR title and body (<code>typo</code> / <code>style</code> / <code>lint</code> / <code>format</code> / <code>chore:</code> map to cleanup; <code>build:</code> maps to tests). A <code>no-cheer</code> or <code>skip-cheer</code> label skips the comment. A second run on the same PR does not post another GIF. <code>locale</code> picks a built-in thank-you (<code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>, <code>uk</code>, <code>it</code>, <code>be</code>, <code>ja</code>); a pinned <code>message</code> wins. Unset model keeps the stdlib path.</p>
+    <p class="mute">Also on the Action: ship, fix, docs, tests, cleanup, celebration, welcome, party, space, magic, coffee, robot, yeah, sre, qa, design, architecture, engineering, backend, java, cpp. <code>topic: title</code> reads the PR title and body (<code>typo</code> / <code>style</code> / <code>lint</code> / <code>format</code> / <code>chore:</code> map to cleanup; <code>build:</code> maps to tests). A <code>no-cheer</code> or <code>skip-cheer</code> label skips the comment. A second run of the same moment does not post another GIF. A changes-requested cheer does not block the merge cheer. <code>locale</code> picks a built-in thank-you (<code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>, <code>uk</code>, <code>it</code>, <code>be</code>, <code>ja</code>); a pinned <code>message</code> wins. Unset model keeps the stdlib path.</p>
 
     <h2 id="install">Install</h2>
     <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.7.0</code> (current release).</p>
@@ -265,8 +265,8 @@ jobs:
       <li><strong>Changes requested.</strong> <code>A bit more work — you have this</code>. <code>changes-topic</code> defaults to yeah. Same two example files. The model writes the line. The GIF stays yeah.</li>
       <li><strong><code>topic: title</code>.</strong> Reads the PR title and body. Conventional types beat mood words. First-timers can get welcome, plus <code>First contribution — welcome.</code> on the comment.</li>
       <li><strong>Pinned topic.</strong> <code>topic: python</code> (or comic, devops, …) on every merge.</li>
-      <li><strong>Skip.</strong> Bot author, bot reviewer, <code>no-cheer</code> / <code>skip-cheer</code>, or a second run on the same pull request.</li>
-      <li><strong>GitLab / Bitbucket.</strong> Merge, closed without merge, or changes requested when the job can see that request. A second run on the same merge request does not post another GIF. Curl until Catalog or Pipes exist.</li>
+      <li><strong>Skip.</strong> Bot author, bot reviewer, <code>no-cheer</code> / <code>skip-cheer</code>, or a second run of the same moment. A changes-requested cheer does not block the merge cheer.</li>
+      <li><strong>GitLab / Bitbucket.</strong> Merge, closed without merge, or changes requested when the job can see that request. A second run of the same moment does not post another GIF. Curl until Catalog or Pipes exist.</li>
     </ul>
 
     <h2>Used by</h2>

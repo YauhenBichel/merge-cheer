@@ -341,6 +341,7 @@ Thank you to everyone who has helped.
   <a href="https://github.com/HeaTTap" title="HeaTTap" aria-label="HeaTTap"><img src=".github/faces/HeaTTap.svg" width="66" height="75" alt="HeaTTap" /></a>
   <a href="https://github.com/Som0111" title="Soumya Padhi" aria-label="Soumya Padhi"><img src=".github/faces/Som0111.svg" width="72" height="82" alt="Soumya Padhi" /></a>
 </p>
+<p align="center"><em>The contributors wall showcases the efforts of three dedicated individuals.</em></p>
 <!-- readme: contributors,bots/- -end -->
 
 Filled from GitHub commits (bots omitted). Live demo: [readme-contributors](https://github.com/YauhenBichel/readme-contributors#live-demo).

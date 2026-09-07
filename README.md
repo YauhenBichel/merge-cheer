@@ -64,6 +64,19 @@ demo: [merge-cheer #53](https://github.com/YauhenBichel/merge-cheer/pull/53#issu
 —*Cheers to YauhenBichel for keeping model cheers that are about the
 pull request!*
 
+[![AI demo](docs/merge-cheer-ai-demo.gif)](https://yauhenbichel.github.io/merge-cheer/#ai)
+
+20 seconds. What the model writes, then the GIF.
+
+**What.** A human pull request merges. The model writes one short line
+about what landed. The GIF group still comes from the title.
+
+**Why.** “Thanks” is empty. A line that names the work is the cheer
+people actually read.
+
+**How.** One secret. `model: gpt-4o-mini`. One call per merge. A 429
+falls back to the stdlib line.
+
 ```yaml
 - uses: YauhenBichel/merge-cheer@e183fbc7b8e395506e627ff60600577dfb5f8f45
   with:

@@ -43,6 +43,10 @@ jobs:
           cp docs/index.html _site/index.html
           cp docs/merge-cheer-demo.mp4 _site/merge-cheer-demo.mp4
           cp docs/merge-cheer-demo-poster.png _site/merge-cheer-demo-poster.png
+          cp docs/merge-cheer-ai-demo.mp4 _site/merge-cheer-ai-demo.mp4
+          cp docs/merge-cheer-ai-demo-poster.png _site/merge-cheer-ai-demo-poster.png
+          cp docs/merge-cheer-ai-demo.gif _site/merge-cheer-ai-demo.gif
+          cp docs/merge-cheer-ai-real.png _site/merge-cheer-ai-real.png
           cp -R gifs _site/gifs
       - uses: actions/upload-pages-artifact@v5
 

@@ -96,6 +96,15 @@
     }
     .why { margin: 1rem 0 0; padding-left: 1.2rem; }
     .why li { margin: 0.45rem 0; }
+    .shot {
+      margin: 1rem 0 0;
+      padding: 0.5rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .shot img { display: block; width: 100%; height: auto; border-radius: 0.4rem; }
+    .shot figcaption { margin-top: 0.45rem; font-size: 0.8rem; color: var(--mute); }
     footer { margin-top: 2.5rem; color: var(--mute); font-size: 0.9rem; }
   </style>
 </head>
@@ -117,7 +126,7 @@
       <li><strong>What.</strong> Merge Cheer comments one G-rated GIF when a human pull request merges. Bots are skipped. The Action does not check out the pull request.</li>
       <li><strong>Why.</strong> The merge is the moment people actually did the work. No Giphy key. The Action ships its own loops, so it works on a new repository with the default token.</li>
       <li><strong>Where.</strong> Code is <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>. Real comments already landed on <a href="https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736">py-harness #350</a> and <a href="https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123">molecare-desktop #26</a>.</li>
-      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.6.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. <a href="#model">Add an OpenAI key</a> when you want a line about what merged.</li>
+      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.6.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
     </ul>
 
     <h2>What happens on merge</h2>
@@ -206,6 +215,23 @@ jobs:
       TOPIC: auto
       BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN</pre>
     <p class="mute">Until the Docker image is public, use the curl job in the example. A <a href="https://support.atlassian.com/bitbucket-cloud/docs/what-are-pipes/">Pipes</a> UI listing needs an Atlassian review — same <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/MARKETPLACES.md">MARKETPLACES.md</a>.</p>
+
+    <h2 id="ai">Watch the AI demo</h2>
+    <video class="demo-video" src="merge-cheer-ai-demo.mp4" poster="merge-cheer-ai-demo-poster.png" controls muted playsinline width="1080" height="1080">
+      <a href="merge-cheer-ai-demo.mp4">Download the 20s AI demo</a>
+    </video>
+    <p>A human pull request merges. The model writes one short line about what landed. The GIF group still comes from the title. “Thanks” is empty. A line that names the work is the cheer people actually read.</p>
+    <ul class="why">
+      <li><strong>What.</strong> One line about the work. The GIF still comes from the title map.</li>
+      <li><strong>Why.</strong> Generic thanks is not a cheer people keep.</li>
+      <li><strong>How.</strong> One secret. <code>model: gpt-4o-mini</code>. One call per merge. A 429 falls back to the stdlib line.</li>
+    </ul>
+    <figure class="shot">
+      <a href="https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316">
+        <img src="merge-cheer-ai-real.png" width="1600" height="929" alt="github-actions comment on merge-cheer pull request 53">
+      </a>
+      <figcaption>Live on <a href="https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316">#53</a>. Cheers to YauhenBichel for keeping model cheers that are about the pull request!</figcaption>
+    </figure>
 
     <h2 id="model">Use a model on your repo</h2>
     <p>Zero-config stays a GIF plus <code>Merged — thank you @author</code>. Add one repository secret and the Action writes a line about <em>what merged</em>. Generic thanks are dropped. A 429 or a bad reply falls back to the stdlib line. The job still does not check out the pull request head.</p>

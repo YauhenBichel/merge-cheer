@@ -18,6 +18,9 @@ variables:
     description: GIF group. auto picks a random theme. Pin python, devops, comic, …
   - name: MESSAGE
     default: "Merged — thank you @{author}."
+  - name: LOCALE
+    default: en
+    description: Default thank-you language. en, es, de, fr, pt, uk. Unknown codes fall back to English.
   - name: ACTION_REF
     default: v1.5.0
   - name: GIPHY_API_KEY

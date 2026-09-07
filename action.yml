@@ -29,6 +29,13 @@ inputs:
       Comment text on merge. `{author}` is the pull request author.
       `{authors}` is the author plus unique human co-authors.
     default: "Merged — thank you @{author}."
+  locale:
+    description: >
+      Language for the default thank-you when message is unset.
+      en, es, de, fr, pt, uk. Unknown codes fall back to English.
+      A pinned message, closed-message, or changes-message still wins.
+    required: false
+    default: "en"
   model:
     description: >
       Optional chat model. Empty keeps the stdlib path. Set an
@@ -78,6 +85,7 @@ runs:
         GIPHY_API_KEY: ${{ inputs.giphy-api-key }}
         GIPHY_RATING: ${{ inputs.rating }}
         MESSAGE: ${{ inputs.message }}
+        LOCALE: ${{ inputs.locale }}
         TOPIC: ${{ inputs.topic }}
         CLOSED_TOPIC: ${{ inputs.closed-topic }}
         CLOSED_MESSAGE: ${{ inputs.closed-message }}

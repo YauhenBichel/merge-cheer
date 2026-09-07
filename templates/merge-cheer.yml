@@ -6,6 +6,9 @@ spec:
     message:
       default: "Merged — thank you @{author}."
       description: Comment text. `{author}` becomes the merge request author.
+    locale:
+      default: en
+      description: Default thank-you language. en, es, de, fr, pt, uk. Unknown codes fall back to English.
     action_ref:
       default: v1.5.0
       description: merge-cheer tag used to download celebrate.py and GIF URLs.
@@ -21,6 +24,7 @@ celebrate:
   variables:
     TOPIC: $[[ inputs.topic ]]
     MESSAGE: $[[ inputs.message ]]
+    LOCALE: $[[ inputs.locale ]]
     ACTION_REF: $[[ inputs.action_ref ]]
     ACTION_REPO: YauhenBichel/merge-cheer
     GITLAB_TOKEN: $[[ inputs.token ]]

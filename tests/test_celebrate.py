@@ -325,6 +325,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("PR_BODY: ${{ github.event.pull_request.body }}", text)
         self.assertIn("PR_LABELS:", text)
         self.assertIn("TOPIC: ${{ inputs.topic }}", text)
+        self.assertIn("LOCALE: ${{ inputs.locale }}", text)
         self.assertNotIn(
             "${{ github.event.pull_request.title }}\n      run:",
             text,
@@ -366,6 +367,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("**Why.**", text)
         self.assertIn("**Where.**", text)
         self.assertIn("**How.**", text)
+        self.assertIn("`locale`", text)
         self.assertIn(".github/workflows/celebrate.yml", text)
         dogfood = (ROOT / ".github" / "workflows" / "celebrate.yml").read_text(
             encoding="utf-8"
@@ -394,6 +396,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("YauhenBichel/merge-cheer@v1.6.0", html)
         self.assertIn("releases/tag/v1.6.0", html)
         self.assertIn("no-cheer", html)
+        self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)
         self.assertIn("merge-cheer-demo-poster.png", html)
@@ -821,6 +824,79 @@ class CelebrateTest(unittest.TestCase):
             celebrate.message_is_default("merge", "Merged — thank you @{author}.")
         )
         self.assertFalse(celebrate.message_is_default("merge", "Custom thanks"))
+
+    def test_locale_picks_a_catalog_line_and_falls_back(self) -> None:
+        celebrate = _load()
+        self.assertEqual(celebrate.normalize_locale("es-ES"), "es")
+        self.assertEqual(celebrate.normalize_locale(""), "en")
+        self.assertEqual(
+            celebrate.localize_message(
+                "merge", "Merged — thank you @{author}.", "es"
+            ),
+            "Fusionado — gracias @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "closed", "Closed — thank you for the work @{author}.", "uk"
+            ),
+            "Закрито — дякую за роботу @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message(
+                "merge", "Merged — thank you @{author}.", "zz"
+            ),
+            "Merged — thank you @{author}.",
+        )
+        self.assertEqual(
+            celebrate.localize_message("merge", "Shipped. Thank you @{author}.", "es"),
+            "Shipped. Thank you @{author}.",
+        )
+        self.assertEqual(celebrate.LOCALES["en"], celebrate.DEFAULT_MESSAGES)
+        for code, pack in celebrate.LOCALES.items():
+            self.assertEqual(set(pack), set(celebrate.DEFAULT_MESSAGES), code)
+
+    def test_main_uses_locale_when_the_message_is_default(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+                "MESSAGE",
+                "LOCALE",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "fix: login"
+            os.environ["LOCALE"] = "es"
+            os.environ["MESSAGE"] = "Merged — thank you @{author}."
+            celebrate.list_github_comments = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_commit_messages = lambda *_a, **_k: []  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            self.assertEqual(code, 0)
+            self.assertIn("Fusionado — gracias @alice.", buf.getvalue())
+            self.assertNotIn("Merged — thank you @alice.", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
 
     def test_main_skips_when_title_has_no_cheer(self) -> None:
         celebrate = _load()

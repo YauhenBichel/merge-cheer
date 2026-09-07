@@ -491,6 +491,52 @@ DEFAULT_MESSAGES = {
     "changes": "A bit more work — you have this @{author}.",
 }
 
+# Static catalog for `locale`. Unknown codes fall back to English.
+# A pinned message / closed-message / changes-message still wins.
+LOCALES = {
+    "en": DEFAULT_MESSAGES,
+    "es": {
+        "merge": "Fusionado — gracias @{author}.",
+        "closed": "Cerrado — gracias por el trabajo @{author}.",
+        "changes": "Un poco más de trabajo — tú puedes @{author}.",
+    },
+    "de": {
+        "merge": "Gemerged — danke @{author}.",
+        "closed": "Geschlossen — danke für die Arbeit @{author}.",
+        "changes": "Noch etwas Arbeit — du schaffst das @{author}.",
+    },
+    "fr": {
+        "merge": "Fusionné — merci @{author}.",
+        "closed": "Fermé — merci pour le travail @{author}.",
+        "changes": "Encore un peu de travail — tu vas y arriver @{author}.",
+    },
+    "pt": {
+        "merge": "Mesclado — obrigado @{author}.",
+        "closed": "Fechado — obrigado pelo trabalho @{author}.",
+        "changes": "Um pouco mais de trabalho — você consegue @{author}.",
+    },
+    "uk": {
+        "merge": "Змерджено — дякую @{author}.",
+        "closed": "Закрито — дякую за роботу @{author}.",
+        "changes": "Ще трохи роботи — у тебе вийде @{author}.",
+    },
+}
+
+
+def normalize_locale(raw: str) -> str:
+    code = (raw or "").strip().lower().replace("_", "-")
+    if not code:
+        return "en"
+    return code.split("-", 1)[0]
+
+
+def localize_message(moment: str, message: str, locale: str) -> str:
+    text = (message or "").strip()
+    if text != DEFAULT_MESSAGES.get(moment, ""):
+        return message
+    pack = LOCALES.get(normalize_locale(locale)) or LOCALES["en"]
+    return pack.get(moment) or DEFAULT_MESSAGES.get(moment, text)
+
 DEFAULT_TOPICS = {
     "merge": "auto",
     "closed": "coffee",
@@ -1225,6 +1271,10 @@ def main() -> int:
         hinted = ask_model(moment, title, pr_body, author, authors)
         if hinted:
             message = hinted
+        else:
+            message = localize_message(
+                moment, message, os.environ.get("LOCALE", "")
+            )
     root = action_root()
     group, name = choose_gif(root, group, number)
     gif = giphy_url(

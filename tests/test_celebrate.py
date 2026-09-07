@@ -466,6 +466,21 @@ class CelebrateTest(unittest.TestCase):
         )
         for code in celebrate.LOCALES:
             self.assertIn(code, celebrate.FIRST_TIMER_LINES)
+        self.assertEqual(
+            celebrate.first_timer_line("es"),
+            "Primera contribución — te damos la bienvenida.",
+        )
+        self.assertEqual(
+            celebrate.first_timer_line("pt"),
+            "Primeira contribuição — damos as boas-vindas.",
+        )
+        self.assertEqual(
+            celebrate.first_timer_line("it"),
+            "Prima contribuzione — ti diamo il benvenuto.",
+        )
+        self.assertNotIn("bienvenido", celebrate.first_timer_line("es"))
+        self.assertNotIn("bem-vindo", celebrate.first_timer_line("pt"))
+        self.assertNotIn("— benvenuto.", celebrate.first_timer_line("it"))
 
     def test_action_never_checkouts_the_pull_request(self) -> None:
         text = ACTION.read_text(encoding="utf-8")

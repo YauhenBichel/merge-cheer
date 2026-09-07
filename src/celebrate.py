@@ -560,12 +560,12 @@ _UNSAFE = (
 FIRST_TIMER_LINE = "First contribution — welcome."
 FIRST_TIMER_LINES = {
     "en": FIRST_TIMER_LINE,
-    "es": "Primera contribución — bienvenido.",
+    "es": "Primera contribución — te damos la bienvenida.",
     "de": "Erster Beitrag — willkommen.",
     "fr": "Première contribution — bienvenue.",
-    "pt": "Primeira contribuição — bem-vindo.",
+    "pt": "Primeira contribuição — damos as boas-vindas.",
     "uk": "Перший внесок — ласкаво просимо.",
-    "it": "Prima contribuzione — benvenuto.",
+    "it": "Prima contribuzione — ti diamo il benvenuto.",
     "be": "Першы ўклад — запрашаем.",
     "ja": "初めてのコントリビューション — ようこそ。",
 }

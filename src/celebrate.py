@@ -694,7 +694,9 @@ def format_authors(logins: list[str]) -> str:
     return f"{', '.join(tagged[:-1])}, and {tagged[-1]}"
 
 
-def collect_authors(author: str, *texts: str) -> list[str]:
+def collect_authors(
+    author: str, *texts: str, extras: list[str] | None = None
+) -> list[str]:
     people: list[str] = []
     seen: set[str] = set()
 
@@ -708,6 +710,8 @@ def collect_authors(author: str, *texts: str) -> list[str]:
 
     add(author)
     for login in parse_coauthors(*texts):
+        add(login)
+    for login in extras or []:
         add(login)
     return people
 
@@ -825,6 +829,38 @@ def list_pr_commit_messages(token: str, repo: str, number: str) -> list[str]:
         if isinstance(commit, dict) and commit.get("message"):
             messages.append(str(commit["message"]))
     return messages
+
+
+def list_pr_reviewers(token: str, repo: str, number: str) -> list[str]:
+    if not token or not repo or not number:
+        return []
+    try:
+        data = _http_json(
+            f"https://api.github.com/repos/{repo}/pulls/{number}/reviews?per_page=100",
+            token,
+            headers=_github_headers(token),
+        )
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"reviews lookup skipped: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        return []
+    people: list[str] = []
+    seen: set[str] = set()
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        user = row.get("user")
+        if not isinstance(user, dict):
+            continue
+        login = str(user.get("login") or "").strip()
+        kind = str(user.get("type") or "")
+        key = login.lower()
+        if not login or key in seen or is_bot_author(login, kind):
+            continue
+        seen.add(key)
+        people.append(login)
+    return people
 
 
 def model_settings() -> tuple[str, str, str] | None:
@@ -1291,9 +1327,11 @@ def main() -> int:
         os.environ.get("CHANGES_MESSAGE", ""),
     )
     commit_text = ""
+    reviewers: list[str] = []
     if host == "github":
         commit_text = "\n".join(list_pr_commit_messages(token, repo, number))
-    logins = collect_authors(author, pr_body, commit_text)
+        reviewers = list_pr_reviewers(token, repo, number)
+    logins = collect_authors(author, pr_body, commit_text, extras=reviewers)
     authors = format_authors(logins)
     group = resolve_group(title, topic, association, number, pr_body)
     if message_is_default(moment, message):

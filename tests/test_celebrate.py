@@ -419,6 +419,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("**Where.**", text)
         self.assertIn("**How.**", text)
         self.assertIn("`locale`", text)
+        self.assertIn("reviewers", text)
         self.assertIn(".github/workflows/celebrate.yml", text)
         dogfood = (ROOT / ".github" / "workflows" / "celebrate.yml").read_text(
             encoding="utf-8"
@@ -450,6 +451,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("YauhenBichel/merge-cheer@v1.6.0", html)
         self.assertIn("releases/tag/v1.6.0", html)
         self.assertIn("no-cheer", html)
+        self.assertIn("reviewers", html)
         self.assertIn("locale", html)
         self.assertIn("model-api-key", html)
         self.assertIn("merge-cheer-demo.mp4", html)
@@ -749,6 +751,27 @@ class CelebrateTest(unittest.TestCase):
         )
         self.assertIn("@alice and @bob", body)
         self.assertIn("<!-- merge-cheer -->", body)
+
+    def test_reviewers_join_the_author_list(self) -> None:
+        celebrate = _load()
+        self.assertEqual(
+            celebrate.collect_authors(
+                "alice",
+                extras=["bob", "alice", "dependabot[bot]"],
+            ),
+            ["alice", "bob"],
+        )
+        celebrate._http_json = lambda *_a, **_k: [  # type: ignore[method-assign]
+            {"user": {"login": "cara", "type": "User"}},
+            {"user": {"login": "github-actions[bot]", "type": "Bot"}},
+            {"user": {"login": "cara", "type": "User"}},
+            {"user": {"login": "dan", "type": "User"}},
+        ]
+        self.assertEqual(
+            celebrate.list_pr_reviewers("token", "org/repo", "12"),
+            ["cara", "dan"],
+        )
+        self.assertEqual(celebrate.list_pr_reviewers("", "org/repo", "12"), [])
 
     def test_already_cheered_finds_the_marker(self) -> None:
         celebrate = _load()

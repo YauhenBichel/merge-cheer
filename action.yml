@@ -28,7 +28,7 @@ inputs:
     description: >
       Comment text on merge. `{author}` becomes `@login` so GitHub
       notifies the pull request author. `{authors}` is the author plus
-      unique human co-authors.
+      unique human co-authors and reviewers.
     default: "Merged — thank you @{author}."
   locale:
     description: >

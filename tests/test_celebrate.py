@@ -952,6 +952,33 @@ class CelebrateTest(unittest.TestCase):
         )
         self.assertEqual(celebrate.list_pr_reviewers("", "org/repo", "12"), [])
 
+    def test_list_pr_files_keeps_names_and_skips_errors(self) -> None:
+        celebrate = _load()
+        seen: list[str] = []
+
+        def fake_files(url, _token, method="GET", payload=None, headers=None):
+            seen.append(url)
+            return [
+                {"filename": "README.md", "patch": "@@ stolen"},
+                {"filename": "src/client.py"},
+                {"patch": "no name"},
+                {"filename": "README.md"},
+            ]
+
+        celebrate._http_json = fake_files  # type: ignore[method-assign]
+        self.assertEqual(
+            celebrate.list_pr_files("token", "org/repo", "12"),
+            ["README.md", "src/client.py"],
+        )
+        self.assertTrue(any("/pulls/12/files" in url for url in seen))
+        self.assertEqual(celebrate.list_pr_files("", "org/repo", "12"), [])
+
+        def boom(*_a, **_k):
+            raise OSError("fixture")
+
+        celebrate._http_json = boom  # type: ignore[method-assign]
+        self.assertEqual(celebrate.list_pr_files("token", "org/repo", "12"), [])
+
     def test_main_thanks_reviewers_only_on_merge(self) -> None:
         celebrate = _load()
         saved = {
@@ -1099,6 +1126,23 @@ class CelebrateTest(unittest.TestCase):
             self.assertNotIn("Allowed groups", seen[0]["messages"][0]["content"])
             user = json.loads(seen[0]["messages"][1]["content"])
             self.assertEqual(len(user["body"]), 200)
+            self.assertEqual(user["files"], [])
+            self.assertIn("file names we sent", seen[0]["messages"][0]["content"])
+            self.assertEqual(
+                celebrate.ask_model(
+                    "merge",
+                    "Improve setup",
+                    "",
+                    "alice",
+                    "@alice",
+                    ["README.md"],
+                ),
+                "README now names the people — thanks {authors}.",
+            )
+            self.assertEqual(
+                json.loads(seen[1]["messages"][1]["content"])["files"],
+                ["README.md"],
+            )
 
             def fake_generic(_url, _token, method="GET", payload=None, headers=None):
                 return {
@@ -1281,6 +1325,35 @@ class CelebrateTest(unittest.TestCase):
             ),
             "Shipped. Thank you @{author}.",
         )
+        self.assertEqual(celebrate.file_hint(["README.md"]), "readme")
+        self.assertEqual(
+            celebrate.work_hint("feat: add python client", ["README.md"]),
+            "readme",
+        )
+        self.assertEqual(
+            celebrate.with_title_hint(
+                "Merged — thank you @{author}.",
+                "feat: add python client",
+                "en",
+                "merge",
+                ["README.md"],
+            ),
+            "Merged the readme — thank you @{author}.",
+        )
+        self.assertTrue(
+            celebrate.cheer_is_specific(
+                "Improve setup",
+                "README updates are looking good — thanks @alice.",
+                ["README.md"],
+            )
+        )
+        self.assertFalse(
+            celebrate.cheer_is_specific(
+                "Improve setup",
+                "Great work everyone!",
+                ["README.md"],
+            )
+        )
         self.assertEqual(celebrate.LOCALES["en"], celebrate.DEFAULT_MESSAGES)
         for code, pack in celebrate.LOCALES.items():
             self.assertEqual(set(pack), set(celebrate.DEFAULT_MESSAGES), code)
@@ -1321,6 +1394,51 @@ class CelebrateTest(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("Fusionado login — gracias @alice.", buf.getvalue())
             self.assertNotIn("Merged — thank you @alice.", buf.getvalue())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_names_work_from_pr_files_without_a_model(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in (
+                "PR_TITLE",
+                "PR_BODY",
+                "PR_LABELS",
+                "DRY_RUN",
+                "PR_AUTHOR",
+                "PR_NUMBER",
+                "GITHUB_OUTPUT",
+                "GITHUB_REPOSITORY",
+                "GITHUB_TOKEN",
+                "MODEL",
+                "MODEL_API_KEY",
+                "MODEL_BASE_URL",
+                "MESSAGE",
+                "LOCALE",
+            )
+        }
+        try:
+            os.environ["DRY_RUN"] = "1"
+            os.environ["PR_AUTHOR"] = "alice"
+            os.environ["PR_NUMBER"] = "1"
+            os.environ["PR_TITLE"] = "feat: add python client"
+            os.environ["GITHUB_TOKEN"] = "token"
+            os.environ["GITHUB_REPOSITORY"] = "org/repo"
+            celebrate.list_github_comments = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_commit_messages = lambda *_a, **_k: []  # type: ignore[method-assign]
+            celebrate.list_pr_files = lambda *_a, **_k: ["README.md"]  # type: ignore[method-assign]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = celebrate.main()
+            out = buf.getvalue()
+            self.assertEqual(code, 0)
+            self.assertIn("Merged the readme — thank you @alice.", out)
+            self.assertNotIn("Merged the python", out)
         finally:
             for key, value in saved.items():
                 if value is None:

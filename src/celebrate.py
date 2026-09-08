@@ -1044,6 +1044,34 @@ def list_pr_reviewers(token: str, repo: str, number: str) -> list[str]:
     return people
 
 
+def list_pr_files(token: str, repo: str, number: str) -> list[str]:
+    """File names on the pull request. No patch. No pull-request head."""
+    if not token or not repo or not number:
+        return []
+    try:
+        data = _http_json(
+            f"https://api.github.com/repos/{repo}/pulls/{number}/files?per_page=100",
+            token,
+            headers=_github_headers(token),
+        )
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        print(f"files lookup skipped: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        return []
+    names: list[str] = []
+    seen: set[str] = set()
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("filename") or "").strip()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        names.append(name)
+    return names
+
+
 def model_settings() -> tuple[str, str, str] | None:
     """Return (api_key, model, base_url) when a model call is allowed."""
     name = os.environ.get("MODEL", "").strip()
@@ -1125,15 +1153,39 @@ def title_hint(title: str) -> str:
     return ""
 
 
+def file_hint(files: list[str] | None) -> str:
+    """First specific word from pull request file names. Basename first."""
+    for raw in files or []:
+        name = (raw or "").strip().replace("\\", "/")
+        if not name:
+            continue
+        base = name.rsplit("/", 1)[-1]
+        stem = base.rsplit(".", 1)[0] if "." in base else base
+        for part in (
+            stem.replace("-", " ").replace("_", " "),
+            name.replace("/", " ").replace(".", " "),
+        ):
+            hint = title_hint(part)
+            if hint:
+                return hint
+    return ""
+
+
+def work_hint(title: str, files: list[str] | None = None) -> str:
+    """Prefer a file name when one exists; otherwise the title word."""
+    return file_hint(files) or title_hint(title)
+
+
 def with_title_hint(
     message: str,
     title: str,
     locale: str = "en",
     moment: str = "merge",
+    files: list[str] | None = None,
 ) -> str:
-    """Put one title word in the default thank-you. Pinned copy is unchanged."""
+    """Put one work word in the default thank-you. Pinned copy is unchanged."""
     text = message or ""
-    hint = title_hint(title)
+    hint = work_hint(title, files)
     if not hint or hint in text.lower() or " — " not in text:
         return text
     loc = normalize_locale(locale)
@@ -1148,7 +1200,9 @@ def with_title_hint(
     return text.replace(" — ", insert, 1)
 
 
-def cheer_is_specific(title: str, message: str) -> bool:
+def cheer_is_specific(
+    title: str, message: str, files: list[str] | None = None
+) -> bool:
     line = (message or "").strip()
     if not is_grated(line):
         return False
@@ -1158,6 +1212,9 @@ def cheer_is_specific(title: str, message: str) -> bool:
     if _GENERIC_CHEER.match(line) or _GENERIC_CHEER.match(stripped):
         return False
     tokens = title_tokens(title)
+    for name in files or []:
+        tokens.update(title_tokens(name.replace("/", " ").replace(".", " ")))
+        tokens.update(title_tokens(Path(name).stem.replace("-", " ").replace("_", " ")))
     if not tokens:
         return True
     low = line.lower()
@@ -1193,6 +1250,7 @@ def ask_model(
     body: str,
     author: str,
     authors: str,
+    files: list[str] | None = None,
 ) -> str | None:
     cfg = model_settings()
     if not cfg:
@@ -1200,11 +1258,14 @@ def ask_model(
     key, model, base = cfg
     excerpt = (body or "")[:200]
     repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    names = [name for name in (files or []) if name][:20]
     system = (
         "You write one G-rated pull-request thank-you that is about "
         "what just landed. "
         'Reply with JSON only: {"message": "<one short line>"}. '
-        "The message must mention something from the title. "
+        "The message must mention something from the title or from "
+        "the file names we sent. "
+        "Do not invent file names or people. "
         "Do not write a generic thanks. "
         "Use @{author} or {authors} so GitHub notifies them. "
         "No slurs, no adult content, no violence."
@@ -1217,6 +1278,7 @@ def ask_model(
             "body": excerpt,
             "author": author,
             "authors": authors,
+            "files": names,
         }
     )
     url = f"{base.rstrip('/')}/chat/completions"
@@ -1247,7 +1309,7 @@ def ask_model(
             ) else {}
             content = str(message.get("content") or "")
     line = _parse_model_payload(content)
-    if not line or not cheer_is_specific(title, line):
+    if not line or not cheer_is_specific(title, line, names):
         print("model skipped: generic or unsafe", file=sys.stderr)
         return None
     print(f"model: message={line}", file=sys.stderr)
@@ -1619,15 +1681,18 @@ def main() -> int:
     )
     commit_text = ""
     reviewers: list[str] = []
+    files: list[str] = []
     if host == "github":
         commit_text = "\n".join(list_pr_commit_messages(token, repo, number))
         if moment == "merge":
             reviewers = list_pr_reviewers(token, repo, number)
+        if message_is_default(moment, message):
+            files = list_pr_files(token, repo, number)
     logins = collect_authors(author, pr_body, commit_text, extras=reviewers)
     authors = format_authors(logins)
     group = resolve_group(title, topic, association, number, pr_body)
     if message_is_default(moment, message):
-        hinted = ask_model(moment, title, pr_body, author, authors)
+        hinted = ask_model(moment, title, pr_body, author, authors, files)
         if hinted:
             message = hinted
         else:
@@ -1639,6 +1704,7 @@ def main() -> int:
                 title,
                 os.environ.get("LOCALE", ""),
                 moment,
+                files,
             )
     root = action_root()
     group, name = choose_gif(root, group, number)

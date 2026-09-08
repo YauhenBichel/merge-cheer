@@ -253,6 +253,14 @@ jobs:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}</pre>
     <p class="mute"><code>@v1.7.0</code> drops generic thanks. A 429 or a junk reply falls back to the stdlib line. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
+    <h3 id="huggingface">Use Hugging Face Inference</h3>
+    <p>Add repository secret <code>HF_TOKEN</code> with Inference Providers permission and copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-huggingface.yml">examples/celebrate-huggingface.yml</a> onto the default branch. No OpenAI key is needed.</p>
+    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: meta-llama/Llama-3.1-8B-Instruct:cheapest
+    model-base-url: https://router.huggingface.co/v1
+    model-api-key: ${{ secrets.HF_TOKEN }}</pre>
+    <p>The 8B chat model uses the router's <code>:cheapest</code> provider policy. See <a href="https://huggingface.co/docs/inference-providers/en/index">Hugging Face Inference Providers</a> for routing and billing; availability and prices can change. Errors, rate limits, and unsafe or generic replies still fall back to the default thank-you. No pull request head checkout.</p>
     <h3 id="credits">Keep credits low</h3>
     <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is random, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
 

@@ -1,0 +1,19 @@
+# Add repository secret HF_TOKEN with Inference Providers permission.
+# The router chooses the lowest output-token price for this 8B chat model.
+# A failed request or unsafe reply falls back to the default thank-you.
+name: Celebrate merge with Hugging Face
+on:
+  pull_request_target:
+    types: [closed]
+permissions:
+  pull-requests: write
+jobs:
+  celebrate:
+    if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: YauhenBichel/merge-cheer@v1.7.0
+        with:
+          model: meta-llama/Llama-3.1-8B-Instruct:cheapest
+          model-base-url: https://router.huggingface.co/v1
+          model-api-key: ${{ secrets.HF_TOKEN }}

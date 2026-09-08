@@ -108,6 +108,27 @@ falls back to the stdlib line.
 the stdlib line — it is not retried. The Action still does not check
 out the pull request head.
 
+### Use Hugging Face Inference
+
+Add a repository secret `HF_TOKEN` with Inference Providers permission, then
+copy [examples/celebrate-huggingface.yml](examples/celebrate-huggingface.yml)
+onto the default branch. No OpenAI key is needed.
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: meta-llama/Llama-3.1-8B-Instruct:cheapest
+    model-base-url: https://router.huggingface.co/v1
+    model-api-key: ${{ secrets.HF_TOKEN }}
+```
+
+This uses an 8B chat model and the router's `:cheapest` provider policy.
+See [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers/en/index)
+for routing and billing. Available providers and prices can change.
+One request writes the line; errors, rate limits, and unsafe or generic
+replies still fall back to the default thank-you. The job never checks out
+the pull request head.
+
 ### Keep credits low
 
 The model writes only the thank-you line. The GIF group stays from

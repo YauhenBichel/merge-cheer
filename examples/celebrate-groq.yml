@@ -1,0 +1,18 @@
+# Add repository secret GROQ_API_KEY from your Groq account.
+# Errors or unsafe replies fall back to the default thank-you.
+name: Celebrate merge with Groq
+on:
+  pull_request_target:
+    types: [closed]
+permissions:
+  pull-requests: write
+jobs:
+  celebrate:
+    if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: YauhenBichel/merge-cheer@v1.7.0
+        with:
+          model: llama-3.1-8b-instant
+          model-base-url: https://api.groq.com/openai/v1
+          model-api-key: ${{ secrets.GROQ_API_KEY }}

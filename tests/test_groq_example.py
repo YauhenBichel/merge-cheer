@@ -26,7 +26,7 @@ class GroqExampleTest(unittest.TestCase):
         self.assertEqual(
             self.inputs,
             {
-                "model": "llama-3.1-8b-instant",
+                "model": "openai/gpt-oss-20b",
                 "model-base-url": "https://api.groq.com/openai/v1",
                 "model-api-key": "${{ secrets.GROQ_API_KEY }}",
             },

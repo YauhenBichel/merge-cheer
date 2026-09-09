@@ -129,6 +129,28 @@ One request writes the line; errors, rate limits, and unsafe or generic
 replies still fall back to the default thank-you. The job never checks out
 the pull request head.
 
+### Use Google Gemini
+
+Add a repository secret `GEMINI_API_KEY` from Google AI Studio, then copy
+[examples/celebrate-gemini.yml](examples/celebrate-gemini.yml) onto the default
+branch. If your key is already stored as `GOOGLE_API_KEY`, change only the
+secret reference in `model-api-key` to `${{ secrets.GOOGLE_API_KEY }}`.
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: gemini-2.5-flash-lite
+    model-base-url: https://generativelanguage.googleapis.com/v1beta/openai
+    model-api-key: ${{ secrets.GEMINI_API_KEY }}
+```
+
+This uses Google's [OpenAI-compatible endpoint](https://ai.google.dev/gemini-api/docs/openai),
+not an OpenAI key. The example uses 2.5 Flash-Lite because
+[Gemini 2.0 Flash has been retired](https://ai.google.dev/gemini-api/docs/deprecations).
+Errors, rate limits, and unsafe or generic replies fall back to the default
+thank-you. The workflow never checks out the pull request head; tests need
+no live API key.
+
 ### Keep credits low
 
 The model writes only the thank-you line. The GIF group stays from

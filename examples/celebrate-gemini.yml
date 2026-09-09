@@ -1,0 +1,19 @@
+# Add repository secret GEMINI_API_KEY from Google AI Studio.
+# Gemini 2.0 Flash is retired; use the supported 2.5 Flash-Lite model.
+# Errors or unsafe replies fall back to the default thank-you.
+name: Celebrate merge with Gemini
+on:
+  pull_request_target:
+    types: [closed]
+permissions:
+  pull-requests: write
+jobs:
+  celebrate:
+    if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: YauhenBichel/merge-cheer@v1.7.0
+        with:
+          model: gemini-2.5-flash-lite
+          model-base-url: https://generativelanguage.googleapis.com/v1beta/openai
+          model-api-key: ${{ secrets.GEMINI_API_KEY }}

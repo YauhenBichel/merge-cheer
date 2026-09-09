@@ -151,6 +151,26 @@ Errors, rate limits, and unsafe or generic replies fall back to the default
 thank-you. The workflow never checks out the pull request head; tests need
 no live API key.
 
+### Use Groq
+
+Add a repository secret `GROQ_API_KEY` from your Groq account, then copy
+[examples/celebrate-groq.yml](examples/celebrate-groq.yml) onto the default
+branch. No OpenAI key is needed.
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: openai/gpt-oss-20b
+    model-base-url: https://api.groq.com/openai/v1
+    model-api-key: ${{ secrets.GROQ_API_KEY }}
+```
+
+The example uses Groq's low-cost GPT OSS 20B chat model. See the
+[Groq model page](https://console.groq.com/docs/models)
+for current pricing and limits. Errors, rate limits, and unsafe or generic
+replies fall back to the default thank-you. No pull request head checkout
+or live API key is needed for the tests.
+
 ### Keep credits low
 
 The model writes only the thank-you line. The GIF group stays from

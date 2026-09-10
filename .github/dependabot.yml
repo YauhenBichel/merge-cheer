@@ -1,6 +1,19 @@
+# Monthly, because these are small workflows on a public repository and a
+# weekly pull request for a digest bump is noise. Security updates ignore this
+# schedule and arrive as soon as an advisory lands.
 version: 2
 updates:
   - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+  # The published image starts from python:3.13-alpine. Nothing was watching
+  # that base image, so a patched Python or Alpine reached the registry only
+  # when something else happened to trigger a rebuild.
+  - package-ecosystem: docker
     directory: /
     schedule:
       interval: monthly

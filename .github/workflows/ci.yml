@@ -2,7 +2,18 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+# A bare push plus pull_request ran this twice on the same commit for every
+# push to a branch with a pull request open. Restricting push to main leaves
+# one run per change.
+#
+# Cancelling applies to pull requests only, so a push to main is never killed
+# part-way through.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -10,9 +21,10 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.13"
       - name: Tests

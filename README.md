@@ -22,10 +22,11 @@ same moment. A changes-requested cheer does not block the merge cheer. Set an Op
 one G-rated line about what merged; generic thanks fall back to the
 stdlib path.
 
-![Merge Cheer demo](docs/merge-cheer-demo.mp4)
+[![Merge Cheer demo](docs/merge-cheer-demo-poster.png)](https://yauhenbichel.github.io/merge-cheer/#demo)
 
-18 seconds. What the Action comments, then four shipped themes. Same
-file as the [site demo](https://yauhenbichel.github.io/merge-cheer/#demo).
+Click for the 18-second walkthrough: what the Action comments, then four
+shipped themes. GitHub cannot play video in a README, so the still opens
+the [site demo](https://yauhenbichel.github.io/merge-cheer/#demo).
 
 ## Install
 
@@ -258,7 +259,7 @@ to `celebration` and prints the list.
 
 ## Live demo
 
-The video above is the walkthrough. What / why / where / how:
+The still above opens the walkthrough. What / why / where / how:
 
 **What.** Merge Cheer comments one G-rated GIF when a human pull request
 merges. Bots are skipped. The Action does not check out the pull request.

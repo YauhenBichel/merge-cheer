@@ -550,7 +550,14 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("gifs/devops/loop.gif", text)
         self.assertIn("gifs/python/snake.gif", text)
         self.assertIn("gifs/golang/gopher.gif", text)
-        self.assertIn("![Merge Cheer demo](docs/merge-cheer-demo.mp4)", text)
+        # A still linked to the site demo, not an MP4 in an image position:
+        # markdown turns ![...]() into <img>, which never plays a video, and
+        # GitHub strips <video> outright. See tests/test_readme_images.py.
+        self.assertIn(
+            "[![Merge Cheer demo](docs/merge-cheer-demo-poster.png)]"
+            "(https://yauhenbichel.github.io/merge-cheer/#demo)",
+            text,
+        )
         self.assertIn("**What.**", text)
         self.assertIn("**Why.**", text)
         self.assertIn("**Where.**", text)

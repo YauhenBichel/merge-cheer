@@ -29,7 +29,7 @@ file as the [site demo](https://yauhenbichel.github.io/merge-cheer/#demo).
 
 ## Install
 
-Pin `@v1.7.0` (current release). `@v1` is the older first release.
+Pin `@v1.7.0` for an exact version, or `@v1` to follow the 1.x line.
 The Action never checks out the pull request head.
 
 ### GitHub
@@ -455,8 +455,8 @@ python3 -m unittest discover -s tests -q
 
 ## Publish a release
 
-Current release is `v1.7.0` (`@v1` is the first tag, not a floating
-major). Listed on the [GitHub Marketplace](https://github.com/marketplace/actions/merge-cheer).
+Current release is `v1.7.0`. `@v1` now moves with each 1.x release, so
+pinning it follows the line rather than freezing on the first tag. Listed on the [GitHub Marketplace](https://github.com/marketplace/actions/merge-cheer).
 A reviewed Release is tests plus a human review — see [RELEASE.md](RELEASE.md).
 Pushing a tag does not publish. Later releases update the existing listing.
 

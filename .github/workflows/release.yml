@@ -80,25 +80,20 @@ jobs:
             if [ -n "$PREV" ]; then
               echo "## Changes since ${PREV}"
               echo
-              git log --pretty=format:'- %s' "${PREV}..${TAG}"
+              # No merge commits, and none of the wall's own refresh commits:
+              # a reader wants what changed, not how it got here. `|| true`
+              # because grep exits 1 when it filters everything out, and
+              # pipefail would take the step down with it.
+              git log --no-merges --pretty=format:'- %s' "${PREV}..${TAG}" \
+                | grep -vE '^- (docs: refresh README contributors|Merge pull request)' || true
               echo
             else
               echo "## Changes"
               echo
-              git log --pretty=format:'- %s' "$TAG"
+              git log --no-merges --pretty=format:'- %s' "$TAG" \
+                | grep -vE '^- (docs: refresh README contributors|Merge pull request)' || true
               echo
             fi
-            echo
-            echo "## Marketplace"
-            echo
-            echo "GitHub does not allow a fully unattended first-time Marketplace"
-            echo "publish. After this reviewed Release exists, open"
-            echo
-            echo "https://github.com/${GITHUB_REPOSITORY}/releases/edit/${TAG}"
-            echo
-            echo "and tick **Publish this Action to the GitHub Marketplace** on the"
-            echo "first listing only. Later releases update the listing if it is"
-            echo "already published."
           } > "${RUNNER_TEMP}/notes.md"
 
           # Idempotent: a parallel create, manual publish, or re-run must not

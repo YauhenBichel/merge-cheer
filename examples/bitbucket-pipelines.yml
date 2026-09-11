@@ -10,7 +10,10 @@ pipelines:
           image: python:3.13
           script:
             - export ACTION_REF=v1.7.0
+            # SHA-256 of celebrate.py from the release notes; set it to pin the script.
+            - export ACTION_SHA256="${ACTION_SHA256:-}"
             - export ACTION_REPO=YauhenBichel/merge-cheer
             - export TOPIC="${TOPIC:-auto}"
             - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
+            - if [ -n "$ACTION_SHA256" ]; then echo "$ACTION_SHA256  celebrate.py" | sha256sum -c -; fi
             - python3 celebrate.py

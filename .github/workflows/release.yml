@@ -77,6 +77,10 @@ jobs:
             echo "Topic groups pick a GIF from the pull request title."
             echo "Zero-config: bundled G-rated GIFs, no Giphy key."
             echo
+            # GitLab and Bitbucket download celebrate.py and run it with a token;
+            # this hash lets them refuse any other file (ACTION_SHA256).
+            echo "celebrate.py SHA-256, for \`ACTION_SHA256\`: \`$(git show "${TAG}:src/celebrate.py" | sha256sum | cut -d' ' -f1)\`"
+            echo
             if [ -n "$PREV" ]; then
               echo "## Changes since ${PREV}"
               echo

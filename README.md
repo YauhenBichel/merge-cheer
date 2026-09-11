@@ -16,8 +16,9 @@ ships its own GIF groups and, by default, picks a **random theme**
 (seeded by the pull request number so the same PR stays stable). Pin a
 group with `topic` when you want one mood every time. Use `topic: title`
 to pick from the title and body. A `no-cheer` / `skip-cheer` label (or
-the same words in the title) skips the comment. The Action thanks
-co-authors (`{authors}`) and, on merge, reviewers. It will not post a second GIF for the
+the same words in the title) skips the comment. On merge, the Action thanks
+co-authors (`{authors}`, up to five, from `Co-authored-by` lines with a GitHub
+noreply address) and reviewers. It will not post a second GIF for the
 same moment. A changes-requested cheer does not block the merge cheer. Set an OpenAI-compatible `model` and `model-api-key` for
 one G-rated line about what merged; generic thanks fall back to the
 stdlib path.
@@ -232,11 +233,16 @@ celebrate:
     TOPIC: auto
     ACTION_REF: v1.7.0
     ACTION_REPO: YauhenBichel/merge-cheer
+    ACTION_SHA256: ""   # from the release notes; pins the script
   script:
     - apk add --no-cache curl
     - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o /tmp/celebrate.py
+    - if [ -n "$ACTION_SHA256" ]; then echo "$ACTION_SHA256  /tmp/celebrate.py" | sha256sum -c -; fi
     - python3 /tmp/celebrate.py
 ```
+
+The script runs with your token. Set `ACTION_SHA256` to the hash in the
+release notes, and the job refuses any other file.
 
 How to publish a Catalog row later: [MARKETPLACES.md](MARKETPLACES.md).
 
@@ -257,7 +263,9 @@ script:
   - export ACTION_REF=v1.7.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
   - export TOPIC="${TOPIC:-auto}"
+  - export ACTION_SHA256="${ACTION_SHA256:-}"   # from the release notes
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
+  - if [ -n "$ACTION_SHA256" ]; then echo "$ACTION_SHA256  celebrate.py" | sha256sum -c -; fi
   - python3 celebrate.py
 ```
 
@@ -430,7 +438,7 @@ before `qa`. `feat: add python client` still ships.
 | `gifs` | empty | Optional https image URLs (comma or newline). Merge only. One is picked, seeded by the pull request number |
 | `gifs-path` | empty | Optional folder on the default branch of `.gif` / `.webp` / `.png` files. Listed via the GitHub API |
 | `note` | empty | Optional extra line after the thank-you (Discord, docs). G-rated. Does not replace `message` |
-| `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds unique human co-authors, and reviewers on merge |
+| `message` | `Merged — thank you @{author}.` | `{author}` becomes `@login` so GitHub notifies them; `{authors}` adds up to five human co-authors (GitHub noreply `Co-authored-by` lines) and reviewers, on merge only |
 | `locale` | `en` | Default thank-you and first-timer language (`en`, `es`, `de`, `fr`, `pt`, `uk`, `it`, `be`, `ja`). Unknown codes fall back to English. A pinned `message` wins |
 | `closed-topic` / `closed-message` | `coffee` / closed thanks | Used when a pull request closes without a merge |
 | `changes-topic` / `changes-message` | `yeah` / more-work line | Used when a reviewer asks for more work |

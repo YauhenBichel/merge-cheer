@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import importlib.util
 import io
 import json
@@ -760,38 +761,37 @@ class CelebrateTest(unittest.TestCase):
         self.assertTrue(shot.is_file())
         self.assertLess(shot.stat().st_size, 500 * 1024)
 
-    def test_contributors_push_does_not_add_missing_readme_names(self) -> None:
-        """Ubuntu git is case-sensitive; `git add` of a missing path exits 128."""
+    def test_contributors_wall_writes_straight_to_main(self) -> None:
+        """The wall is readme-contributors' reusable workflow, landing on main.
+
+        It used to be a copied job that opened a docs/contributors pull request
+        and merged it: a bot PR in the history for every refresh, and a
+        dependency on Actions being allowed to create pull requests. The reusable
+        wall commits straight to main after each merge, through the write deploy
+        key stored as CONTRIBUTORS_DEPLOY_KEY, and handles the missing-path
+        `git add` the old copy had to guard against itself.
+        """
         text = (ROOT / ".github" / "workflows" / "contributors.yml").read_text(
             encoding="utf-8"
         )
+        self.assertRegex(
+            text,
+            r"uses: YauhenBichel/readme-contributors/\.github/workflows/wall\.yml@[0-9a-f]{40}",
+            "pin the reusable wall by commit",
+        )
+        self.assertIn("secrets: inherit", text)  # OPENAI_API_KEY and the deploy key
         self.assertIn("format: html", text)
         self.assertIn("caption: auto", text)
-        self.assertIn("secrets.OPENAI_API_KEY", text)
-        forbidden = {"README", "readme.md", ".github/contributors.svg"}
-        added: list[str] = []
-        for line in text.splitlines():
-            stripped = line.strip()
-            if not stripped.startswith("git add "):
-                continue
-            added.extend(stripped.split()[2:])
-        self.assertIn("README.md", added)
-        self.assertIn("[ -d .github/faces ] && git add .github/faces", text)
-        self.assertIn(
-            "[ -e .github/contributors.svg ] && git add .github/contributors.svg",
-            text,
+        self.assertIn("model: gpt-4o-mini", text)
+        self.assertIn("branches: [main]", text)
+        # A wall drawn on a pull request branch is stale by the time it merges.
+        self.assertIsNone(re.search(r"^\s*pull_request(_target)?:", text, re.M))
+        # The header comment tells the history, so only commands are checked.
+        commands = "\n".join(
+            line for line in text.splitlines() if not line.lstrip().startswith("#")
         )
-        self.assertEqual([name for name in added if name in forbidden], [])
-        self.assertIn("pull-requests: write", text)
-        self.assertIn("docs/contributors", text)
-        self.assertIn("gh pr create", text)
-        self.assertIn("gh pr merge", text)
-        self.assertIn('gh pr merge "$NUMBER" --squash --auto || gh pr merge "$NUMBER" --squash', text)
-        self.assertNotIn("--jq .number", text)
-        self.assertNotIn(
-            "GitHub Actions is not permitted to create or approve pull requests",
-            text,
-        )
+        self.assertNotIn("gh pr create", commands)
+        self.assertNotIn("docs/contributors", commands)
 
     def test_bundled_gif_names_match_the_repo(self) -> None:
         celebrate = _load()

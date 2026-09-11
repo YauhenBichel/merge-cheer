@@ -518,7 +518,7 @@ Thank you to everyone who has helped.
   <a href="https://github.com/Jo-shreer" title="Jyoti Gupta" aria-label="Jyoti Gupta"><img src=".github/faces/Jo-shreer.svg" width="80" height="91" alt="Jyoti Gupta" /></a>
   <a href="https://github.com/Som0111" title="Soumya Padhi" aria-label="Soumya Padhi"><img src=".github/faces/Som0111.svg" width="63" height="72" alt="Soumya Padhi" /></a>
 </p>
-<p align="center"><em>The contributors wall proudly displays the names of five dedicated individuals.</em></p>
+<p align="center"><em>The contributors wall showcases the efforts of 5 dedicated individuals.</em></p>
 <!-- readme: contributors,bots/- -end -->
 
 Filled from the GitHub contributors API (bots omitted). Live demo: [readme-contributors](https://github.com/YauhenBichel/readme-contributors#live-demo).

@@ -172,6 +172,29 @@ for current pricing and limits. Errors, rate limits, and unsafe or generic
 replies fall back to the default thank-you. No pull request head checkout
 or live API key is needed for the tests.
 
+### Use Anthropic Claude
+
+Add a repository secret `ANTHROPIC_API_KEY` using a key scoped to a single
+Anthropic workspace, then copy
+[examples/celebrate-anthropic.yml](examples/celebrate-anthropic.yml) onto the
+default branch. No OpenAI key is needed.
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: claude-haiku-4-5-20251001
+    model-base-url: https://api.anthropic.com/v1
+    model-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+This uses Anthropic's [OpenAI compatibility layer](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk),
+which Anthropic positions for evaluation rather than most production use cases.
+Keys with access to multiple workspaces require an `anthropic-workspace-id`
+header that this Action does not expose; use a single-workspace key here.
+The example pins Haiku 4.5. Errors, rate limits, and unsafe or malformed replies
+fall back to the default thank-you. No pull request head checkout or live key
+is needed for the tests.
+
 ### Keep credits low
 
 The model writes only the thank-you line. The GIF group stays from

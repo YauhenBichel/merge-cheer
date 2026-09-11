@@ -277,6 +277,14 @@ jobs:
     model-base-url: https://api.groq.com/openai/v1
     model-api-key: ${{ secrets.GROQ_API_KEY }}</pre>
     <p>This uses Groq's low-cost GPT OSS 20B chat model. See the <a href="https://console.groq.com/docs/models">model page</a> for current pricing and limits. Errors, rate limits, and unsafe or generic replies fall back to the default thank-you. No pull request head checkout or live API key is needed for the tests.</p>
+    <h3 id="anthropic">Use Anthropic Claude</h3>
+    <p>Add repository secret <code>ANTHROPIC_API_KEY</code> using a key scoped to a single Anthropic workspace, then copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-anthropic.yml">examples/celebrate-anthropic.yml</a> onto the default branch. No OpenAI key is needed.</p>
+    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+  with:
+    model: claude-haiku-4-5-20251001
+    model-base-url: https://api.anthropic.com/v1
+    model-api-key: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
+    <p>This uses Anthropic's <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk">OpenAI compatibility layer</a>, intended for evaluation rather than most production use cases. Multi-workspace keys require an <code>anthropic-workspace-id</code> header this Action does not expose; use a single-workspace key. The example pins Haiku 4.5. Errors, rate limits, and unsafe or malformed replies fall back to the default thank-you. No pull request head checkout or live key is needed for the tests.</p>
     <h3 id="credits">Keep credits low</h3>
     <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is random, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
 

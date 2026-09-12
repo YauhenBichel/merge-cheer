@@ -539,9 +539,9 @@ _GITHUB_NOREPLY = re.compile(
     r"@users\.noreply\.github\.com$",
     re.I,
 )
-_LOGIN_TOKEN = re.compile(
-    r"^@?(?P<login>[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?)\b"
-)
+# The pull request's author writes every Co-authored-by line, so each one is a
+# mention they can make the bot post. A few is thanks; more is spam.
+MAX_COAUTHORS = 5
 GITHUB_MODELS_URL = "https://models.github.ai/inference"
 AZURE_MODELS_URL = "https://models.inference.ai.azure.com"
 _UNSAFE = (
@@ -825,6 +825,8 @@ def parse_coauthors(*texts: str) -> list[str]:
             continue
         seen.add(key)
         found.append(login)
+        if len(found) == MAX_COAUTHORS:
+            break
     return found
 
 
@@ -833,15 +835,13 @@ def _coauthor_login(rest: str) -> str:
     name_part = raw.split("<", 1)[0].strip()
     if is_bot_author(name_part):
         return ""
+    # Only Git's trailer form with a GitHub noreply address names a login, the
+    # form GitHub itself writes. A bare login could mention anyone at all.
     email_match = re.search(r"<([^>]+)>", raw)
-    if email_match:
-        email = email_match.group(1).strip()
-        noreply = _GITHUB_NOREPLY.search(email)
-        if noreply:
-            return noreply.group("login")
+    if not email_match:
         return ""
-    token = _LOGIN_TOKEN.match(raw)
-    return token.group("login") if token else ""
+    noreply = _GITHUB_NOREPLY.search(email_match.group(1).strip())
+    return noreply.group("login") if noreply else ""
 
 
 def format_authors(logins: list[str]) -> str:
@@ -875,6 +875,17 @@ def collect_authors(
     for login in extras or []:
         add(login)
     return people
+
+
+def people_to_credit(
+    moment: str, author: str, pr_body: str, commit_text: str, reviewers: list[str]
+) -> list[str]:
+    """Co-authors and reviewers are thanked on merge only. A closed or
+    changes-requested pull request is its author's alone, so its text must not
+    let them make the bot mention anyone else."""
+    if moment != "merge":
+        return collect_authors(author)
+    return collect_authors(author, pr_body, commit_text, extras=reviewers)
 
 
 def already_cheered(comments: object, moment: str = "merge") -> bool:
@@ -1221,6 +1232,22 @@ def cheer_is_specific(
     return any(token in low for token in tokens)
 
 
+MODEL_LINE_MAX = 200
+# A model reads the pull request, which its author wrote, so its reply can carry
+# their instructions. Links, markup and extra mentions are refused outright.
+_MODEL_LINE_UNSAFE = re.compile(
+    r"https?://|www\.|\]\(|<[^>]*>|[\r\n]|@(?!\{author\})[A-Za-z0-9]", re.I
+)
+
+
+def model_line_ok(title: str, line: str, files: list[str] | None = None) -> bool:
+    """A model reply is used only as one short plain line about this change."""
+    text = (line or "").strip()
+    if not text or len(text) > MODEL_LINE_MAX or _MODEL_LINE_UNSAFE.search(line or ""):
+        return False
+    return cheer_is_specific(title, text, files)
+
+
 def _parse_model_payload(raw: str) -> str | None:
     text = (raw or "").strip()
     if not text:
@@ -1309,7 +1336,7 @@ def ask_model(
             ) else {}
             content = str(message.get("content") or "")
     line = _parse_model_payload(content)
-    if not line or not cheer_is_specific(title, line, names):
+    if not line or not model_line_ok(title, line, names):
         print("model skipped: generic or unsafe", file=sys.stderr)
         return None
     print(f"model: message={line}", file=sys.stderr)
@@ -1688,7 +1715,7 @@ def main() -> int:
             reviewers = list_pr_reviewers(token, repo, number)
         if message_is_default(moment, message):
             files = list_pr_files(token, repo, number)
-    logins = collect_authors(author, pr_body, commit_text, extras=reviewers)
+    logins = people_to_credit(moment, author, pr_body, commit_text, reviewers)
     authors = format_authors(logins)
     group = resolve_group(title, topic, association, number, pr_body)
     if message_is_default(moment, message):

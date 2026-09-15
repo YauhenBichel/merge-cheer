@@ -2,7 +2,7 @@
 # a catalog release, switch the include to that catalog path@version.
 #
 # include:
-#   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.7.0
+#   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.8.0
 #     inputs:
 #       topic: auto
 #       token: $GITLAB_TOKEN
@@ -14,7 +14,7 @@ celebrate:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
   variables:
     TOPIC: auto
-    ACTION_REF: v1.7.0
+    ACTION_REF: v1.8.0
     # SHA-256 of celebrate.py from the release notes. The script runs with your
     # token, so pin it: the job then refuses any other file.
     ACTION_SHA256: ""

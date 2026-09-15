@@ -23,7 +23,7 @@ class HuggingFaceExampleTest(unittest.TestCase):
         )
 
     def test_example_is_pinned_and_does_not_need_an_openai_secret(self) -> None:
-        self.assertIn("YauhenBichel/merge-cheer@v1.7.0", self.example)
+        self.assertIn("YauhenBichel/merge-cheer@v1.8.0", self.example)
         self.assertEqual(self.inputs["model-api-key"], "${{ secrets.HF_TOKEN }}")
         self.assertEqual(self.inputs["model-base-url"], "https://router.huggingface.co/v1")
         self.assertNotIn("OPENAI_API_KEY", self.example)

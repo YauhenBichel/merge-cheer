@@ -29,7 +29,7 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.7.0
+      - uses: YauhenBichel/merge-cheer@v1.8.0
         with:
           model: gpt-4o-mini
           model-api-key: ${{ secrets.OPENAI_API_KEY }}

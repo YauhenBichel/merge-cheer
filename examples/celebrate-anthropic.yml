@@ -11,7 +11,7 @@ jobs:
     if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.7.0
+      - uses: YauhenBichel/merge-cheer@v1.8.0
         with:
           model: claude-haiku-4-5-20251001
           model-base-url: https://api.anthropic.com/v1

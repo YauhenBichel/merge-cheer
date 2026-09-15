@@ -10,7 +10,7 @@ spec:
       default: en
       description: Default thank-you language. en, es, de, fr, pt, uk, it, be, ja. Unknown codes fall back to English.
     action_ref:
-      default: v1.7.0
+      default: v1.8.0
       description: merge-cheer tag or commit used to download celebrate.py and GIF URLs.
     action_sha256:
       default: ""

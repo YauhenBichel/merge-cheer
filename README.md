@@ -110,6 +110,11 @@ falls back to the stdlib line.
 the stdlib line — it is not retried. The Action still does not check
 out the pull request head.
 
+If the model cannot be reached — no reply within 20 seconds, a network
+error, a strange reply, or a malformed key or base URL — the default
+thank-you is posted anyway. The job logs `model skipped: <reason>` and a
+warning, never the key.
+
 ### Use Hugging Face Inference
 
 Add a repository secret `HF_TOKEN` with Inference Providers permission, then

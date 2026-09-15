@@ -115,7 +115,7 @@
     <ul class="links">
       <li><a href="https://github.com/YauhenBichel/merge-cheer">GitHub repo</a></li>
       <li><a href="https://github.com/marketplace/actions/merge-cheer">GitHub Marketplace</a></li>
-      <li><a href="https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.7.0">Release v1.7.0</a></li>
+      <li><a href="https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.8.0">Release v1.8.0</a></li>
       <li><a href="#cases">Cases</a></li>
     </ul>
 
@@ -127,7 +127,7 @@
       <li><strong>What.</strong> Merge Cheer comments one G-rated GIF when a human pull request merges. Bots are skipped. The Action does not check out the pull request.</li>
       <li><strong>Why.</strong> The merge is the moment people actually did the work. No Giphy key. The Action ships its own loops, so it works on a new repository with the default token.</li>
       <li><strong>Where.</strong> Code is <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>. Real comments already landed on <a href="https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736">py-harness #350</a> and <a href="https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123">molecare-desktop #26</a>.</li>
-      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.7.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. Reviewers are thanked on merge. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
+      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.8.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. Reviewers are thanked on merge. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
     </ul>
 
     <h2>What happens on merge</h2>
@@ -165,7 +165,7 @@
     <p class="mute">Also on the Action: ship, fix, docs, tests, cleanup, celebration, welcome, party, space, magic, coffee, robot, yeah, sre, qa, design, architecture, engineering, backend, java, cpp. <code>topic: title</code> reads the PR title and body (<code>typo</code> / <code>style</code> / <code>lint</code> / <code>format</code> / <code>chore:</code> map to cleanup; <code>build:</code> maps to tests). A <code>no-cheer</code> or <code>skip-cheer</code> label skips the comment. A second run of the same moment does not post another GIF. A changes-requested cheer does not block the merge cheer. <code>locale</code> picks a built-in thank-you (<code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>, <code>uk</code>, <code>it</code>, <code>be</code>, <code>ja</code>); a pinned <code>message</code> wins. Unset model keeps the stdlib path.</p>
 
     <h2 id="install">Install</h2>
-    <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.7.0</code> (current release).</p>
+    <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.8.0</code> (current release).</p>
 
     <h3>GitHub</h3>
     <ol class="steps">
@@ -184,9 +184,9 @@ jobs:
     if: github.event.pull_request.merged &amp;&amp; github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.7.0</pre>
+      - uses: YauhenBichel/merge-cheer@v1.8.0</pre>
     <p>Pin a theme when you want the same mood on every merge:</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     topic: comic   # or python, devops, sunny, game, …</pre>
     <p class="mute"><code>@v1</code> is the older first release, not a floating major. An unknown <code>topic</code> falls back to <code>celebration</code>.</p>
@@ -201,7 +201,7 @@ jobs:
   image: python:3.13-alpine
   variables:
     TOPIC: auto
-    ACTION_REF: v1.7.0
+    ACTION_REF: v1.8.0
     ACTION_REPO: YauhenBichel/merge-cheer
   script:
     - apk add --no-cache curl
@@ -216,7 +216,7 @@ jobs:
       <li>Merge a pull request. The step comments the GIF. A job that can see a declined or change-requested PR uses those moments instead.</li>
     </ol>
     <pre>script:
-  - export ACTION_REF=v1.7.0
+  - export ACTION_REF=v1.8.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
   - export TOPIC="${TOPIC:-auto}"
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
@@ -248,14 +248,14 @@ jobs:
       <li>Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-openai.yml">examples/celebrate-openai.yml</a> onto the default branch.</li>
       <li>Merge a human pull request. Read the comment, then the job log for <code>model: message=…</code>.</li>
     </ol>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}</pre>
     <p class="mute"><code>@v1.7.0</code> drops generic thanks. A 429 or a junk reply falls back to the stdlib line. Any OpenAI-compatible host works via <code>model-base-url</code>.</p>
     <h3 id="huggingface">Use Hugging Face Inference</h3>
     <p>Add repository secret <code>HF_TOKEN</code> with Inference Providers permission and copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-huggingface.yml">examples/celebrate-huggingface.yml</a> onto the default branch. No OpenAI key is needed.</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     model: meta-llama/Llama-3.1-8B-Instruct:cheapest
     model-base-url: https://router.huggingface.co/v1
@@ -263,7 +263,7 @@ jobs:
     <p>The 8B chat model uses the router's <code>:cheapest</code> provider policy. See <a href="https://huggingface.co/docs/inference-providers/en/index">Hugging Face Inference Providers</a> for routing and billing; availability and prices can change. Errors, rate limits, and unsafe or generic replies still fall back to the default thank-you. No pull request head checkout.</p>
     <h3 id="gemini">Use Google Gemini</h3>
     <p>Add repository secret <code>GEMINI_API_KEY</code> from Google AI Studio and copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-gemini.yml">examples/celebrate-gemini.yml</a> onto the default branch. If the key is already stored as <code>GOOGLE_API_KEY</code>, use <code>${{ secrets.GOOGLE_API_KEY }}</code> for <code>model-api-key</code>.</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     model: gemini-2.5-flash-lite
     model-base-url: https://generativelanguage.googleapis.com/v1beta/openai
@@ -271,7 +271,7 @@ jobs:
     <p>This uses Google's <a href="https://ai.google.dev/gemini-api/docs/openai">OpenAI-compatible endpoint</a>, not an OpenAI key. The example uses 2.5 Flash-Lite because <a href="https://ai.google.dev/gemini-api/docs/deprecations">Gemini 2.0 Flash has been retired</a>. Errors, rate limits, and unsafe or generic replies fall back to the default thank-you. No pull request head checkout; tests need no live API key.</p>
     <h3 id="groq">Use Groq</h3>
     <p>Add repository secret <code>GROQ_API_KEY</code> from your Groq account and copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-groq.yml">examples/celebrate-groq.yml</a> onto the default branch. No OpenAI key is needed.</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     model: openai/gpt-oss-20b
     model-base-url: https://api.groq.com/openai/v1
@@ -279,7 +279,7 @@ jobs:
     <p>This uses Groq's low-cost GPT OSS 20B chat model. See the <a href="https://console.groq.com/docs/models">model page</a> for current pricing and limits. Errors, rate limits, and unsafe or generic replies fall back to the default thank-you. No pull request head checkout or live API key is needed for the tests.</p>
     <h3 id="anthropic">Use Anthropic Claude</h3>
     <p>Add repository secret <code>ANTHROPIC_API_KEY</code> using a key scoped to a single Anthropic workspace, then copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-anthropic.yml">examples/celebrate-anthropic.yml</a> onto the default branch. No OpenAI key is needed.</p>
-    <pre>- uses: YauhenBichel/merge-cheer@v1.7.0
+    <pre>- uses: YauhenBichel/merge-cheer@v1.8.0
   with:
     model: claude-haiku-4-5-20251001
     model-base-url: https://api.anthropic.com/v1
@@ -319,7 +319,7 @@ jobs:
       <li><a href="https://github.com/YauhenBichel/python-vibe">YauhenBichel/python-vibe</a></li>
       <li><a href="https://github.com/YauhenBichel/readme-contributors">YauhenBichel/readme-contributors</a></li>
     </ul>
-    <p class="mute">To be listed, merge a celebrate workflow that <code>uses: YauhenBichel/merge-cheer@v1.7.0</code> on the default branch.</p>
+    <p class="mute">To be listed, merge a celebrate workflow that <code>uses: YauhenBichel/merge-cheer@v1.8.0</code> on the default branch.</p>
 
     <footer>
       <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>

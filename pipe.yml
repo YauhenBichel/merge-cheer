@@ -22,6 +22,6 @@ variables:
     default: en
     description: Default thank-you language. en, es, de, fr, pt, uk, it, be, ja. Unknown codes fall back to English.
   - name: ACTION_REF
-    default: v1.7.0
+    default: v1.8.0
   - name: GIPHY_API_KEY
     default: ""

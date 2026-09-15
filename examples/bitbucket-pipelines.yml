@@ -9,7 +9,7 @@ pipelines:
           name: Merge Cheer
           image: python:3.13
           script:
-            - export ACTION_REF=v1.7.0
+            - export ACTION_REF=v1.8.0
             # SHA-256 of celebrate.py from the release notes; set it to pin the script.
             - export ACTION_SHA256="${ACTION_SHA256:-}"
             - export ACTION_REPO=YauhenBichel/merge-cheer

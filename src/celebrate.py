@@ -9,6 +9,7 @@ import os
 import random
 import re
 import sys
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -1271,7 +1272,61 @@ def _parse_model_payload(raw: str) -> str | None:
     return message or None
 
 
+# The whole model step (request and reply parsing) gets this long. The socket
+# timeout in _http_json is per read, so a slow drip could last far longer.
+MODEL_DEADLINE_SECONDS = 20.0
+_MODEL_KEY_OK = re.compile(r"[\x21-\x7e]+")
+
+
+def _model_skip_reason(exc: BaseException) -> str:
+    """Why the model was skipped, without the key, headers, or reply text."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return f"HTTP {exc.code}"
+    if isinstance(exc, (TimeoutError, urllib.error.URLError, json.JSONDecodeError)):
+        return str(exc)
+    return type(exc).__name__
+
+
+def _warn_model_skipped(reason: str) -> None:
+    print(f"model skipped: {reason}", file=sys.stderr)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(
+            "::warning title=Merge Cheer::model unavailable "
+            f"({reason}); posted the default thank-you"
+        )
+
+
 def ask_model(
+    moment: str,
+    title: str,
+    body: str,
+    author: str,
+    authors: str,
+    files: list[str] | None = None,
+) -> str | None:
+    """The model line, or None. Never raises and never runs past the deadline."""
+    result: dict[str, object] = {}
+
+    def run() -> None:
+        try:
+            result["line"] = _ask_model(moment, title, body, author, authors, files)
+        except Exception as exc:  # a model must never fail the job
+            result["error"] = exc
+
+    worker = threading.Thread(target=run, name="merge-cheer-model", daemon=True)
+    worker.start()
+    worker.join(MODEL_DEADLINE_SECONDS)
+    if worker.is_alive():
+        _warn_model_skipped(f"no reply within {MODEL_DEADLINE_SECONDS:g}s")
+        return None
+    if "error" in result:
+        _warn_model_skipped(_model_skip_reason(result["error"]))  # type: ignore[arg-type]
+        return None
+    line = result.get("line")
+    return line if isinstance(line, str) else None
+
+
+def _ask_model(
     moment: str,
     title: str,
     body: str,
@@ -1283,6 +1338,13 @@ def ask_model(
     if not cfg:
         return None
     key, model, base = cfg
+    parsed_base = urllib.parse.urlparse(base)
+    if parsed_base.scheme not in {"http", "https"} or not parsed_base.netloc:
+        _warn_model_skipped("model-base-url must be an http:// or https:// URL")
+        return None
+    if not _MODEL_KEY_OK.fullmatch(key):
+        _warn_model_skipped("model-api-key has spaces or characters a header cannot carry")
+        return None
     excerpt = (body or "")[:200]
     repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
     names = [name for name in (files or []) if name][:20]
@@ -1330,7 +1392,7 @@ def ask_model(
     content = ""
     if isinstance(data, dict):
         choices = data.get("choices") or []
-        if choices and isinstance(choices[0], dict):
+        if isinstance(choices, list) and choices and isinstance(choices[0], dict):
             message = (choices[0].get("message") or {}) if isinstance(
                 choices[0].get("message"), dict
             ) else {}

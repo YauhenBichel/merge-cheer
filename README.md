@@ -106,7 +106,7 @@ falls back to the stdlib line.
     model-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-`@v1.7.0` drops generic thanks. A 429 or a junk reply falls back to
+`@v1.8.0` drops generic thanks. A 429 or a junk reply falls back to
 the stdlib line — it is not retried. The Action still does not check
 out the pull request head.
 

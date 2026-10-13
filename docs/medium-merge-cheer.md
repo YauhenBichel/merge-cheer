@@ -30,10 +30,10 @@ Then one of these:
 
 That last one is an IT-section theme. The Action also ships DevOps, SRE, QA, design, architecture, engineering, backend, frontend, Java, C++, and Golang, next to the older packs (ship, fix, party, comic, …).
 
-Default `topic: auto` picks a **random theme**, seeded by the pull request number, so the same PR stays stable if the job reruns. Pin a group when the repo has a home:
+Default `topic: title` picks from the PR. Set `topic: auto` for a **random theme**, seeded by the pull request number, so the same PR stays stable if the job reruns. Pin a group when the repo has a home:
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.7.0
+- uses: YauhenBichel/merge-cheer@v1.9.0
   with:
     topic: python
 ```
@@ -52,7 +52,7 @@ jobs:
     if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.7.0
+      - uses: YauhenBichel/merge-cheer@v1.9.0
 ```
 
 `topic: title` reads the PR title and body (`fix`, `feat`, `docs`, plus `typo` / `style` / `lint`). Conventional types still win, so `feat: add python client` ships. A `no-cheer` label skips the GIF. Co-authors are thanked. An unknown name falls back to `celebration`. Unset model keeps the stdlib path.
@@ -62,10 +62,10 @@ It is already posting on public repos. Two real merge comments:
 - [py-harness #350](https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736) — comic / burst
 - [molecare-desktop #26](https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123) — game / level-up
 
-Also on molecare-mcp, molecare-ml, molecare-skin-llm, MoleCare/.github, python-vibe, and [readme-contributors](https://github.com/YauhenBichel/readme-contributors), all pinned to `@v1.7.0`.
+Also on molecare-mcp, molecare-ml, molecare-skin-llm, MoleCare/.github, python-vibe, and [readme-contributors](https://github.com/YauhenBichel/readme-contributors), all pinned to `@v1.9.0`.
 
 Code: [github.com/YauhenBichel/merge-cheer](https://github.com/YauhenBichel/merge-cheer)
 
-Release: [v1.7.0](https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.7.0)
+Release: [v1.9.0](https://github.com/YauhenBichel/merge-cheer/releases/tag/v1.9.0)
 
 Demo video: [merge-cheer-demo.mp4](https://yauhenbichel.github.io/merge-cheer/merge-cheer-demo.mp4)

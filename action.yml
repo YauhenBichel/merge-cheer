@@ -11,15 +11,15 @@ inputs:
     default: ${{ github.token }}
   topic:
     description: >
-      GIF group. auto (default) picks a random theme, seeded by the
-      pull request number so the same PR stays stable. Set a group
-      name to pin that mood. title picks from the PR title and body.
+      GIF group. title (default) picks from the PR title and body.
+      auto picks a random theme, seeded by the pull request number so
+      the same PR stays stable. Set a group name to pin that mood.
       Groups: ship, fix, docs, tests, cleanup, celebration, welcome,
       party, space, magic, coffee, robot, comic, sunny, game, sticker,
       yeah, devops, sre, qa, design, architecture, engineering,
       backend, frontend, java, python, cpp, golang.
     required: false
-    default: "auto"
+    default: "title"
   giphy-api-key:
     description: Optional Giphy key. When unset, the bundled GIFs are used.
     required: false
@@ -66,8 +66,8 @@ inputs:
       Optional chat model. Empty keeps the stdlib path. Set an
       OpenAI-compatible model name with model-api-key. The model
       writes only the thank-you line. The GIF group stays from
-      topic: auto is a random theme, title reads the PR title and
-      body. The line must be about the pull request; generic thanks
+      topic: title reads the PR title and body, auto is a random
+      theme. The line must be about the pull request; generic thanks
       are ignored.
     required: false
     default: ""

@@ -515,7 +515,8 @@ class CelebrateTest(unittest.TestCase):
         text = ACTION.read_text(encoding="utf-8")
         self.assertIn("topic:", text)
         self.assertIn("random theme", text)
-        self.assertIn("title picks from the PR title", text)
+        self.assertIn("title (default) picks from the PR title", text)
+        self.assertIn('default: "title"', text)
         for group in celebrate.GROUPS:
             self.assertIn(group, text)
 
@@ -1211,10 +1212,11 @@ class CelebrateTest(unittest.TestCase):
 
     def test_explicit_topic_is_not_overridden_by_defaults(self) -> None:
         celebrate = _load()
-        self.assertTrue(celebrate.topic_is_default("merge", "auto"))
+        self.assertTrue(celebrate.topic_is_default("merge", "title"))
+        self.assertTrue(celebrate.topic_is_default("merge", ""))
         self.assertTrue(celebrate.topic_is_default("closed", "coffee"))
         self.assertFalse(celebrate.topic_is_default("merge", "ship"))
-        self.assertFalse(celebrate.topic_is_default("merge", "title"))
+        self.assertFalse(celebrate.topic_is_default("merge", "auto"))
         self.assertTrue(
             celebrate.message_is_default("merge", "Merged — thank you @{author}.")
         )
@@ -1334,8 +1336,16 @@ class CelebrateTest(unittest.TestCase):
         )
         self.assertEqual(celebrate.file_hint(["README.md"]), "readme")
         self.assertEqual(
+            celebrate.title_phrase("feat: add python client"),
+            "python client",
+        )
+        self.assertEqual(
+            celebrate.title_phrase("chore: pin readme-contributors to v1.9.2"),
+            "pin readme-contributors v1.9.2",
+        )
+        self.assertEqual(
             celebrate.work_hint("feat: add python client", ["README.md"]),
-            "readme",
+            "python client",
         )
         self.assertEqual(
             celebrate.with_title_hint(
@@ -1345,7 +1355,7 @@ class CelebrateTest(unittest.TestCase):
                 "merge",
                 ["README.md"],
             ),
-            "Merged the readme — thank you @{author}.",
+            "Merged the python client — thank you @{author}.",
         )
         self.assertTrue(
             celebrate.cheer_is_specific(
@@ -1364,6 +1374,38 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(celebrate.LOCALES["en"], celebrate.DEFAULT_MESSAGES)
         for code, pack in celebrate.LOCALES.items():
             self.assertEqual(set(pack), set(celebrate.DEFAULT_MESSAGES), code)
+
+    def test_model_warns_when_the_api_key_is_missing(self) -> None:
+        celebrate = _load()
+        saved = {
+            key: os.environ.pop(key, None)
+            for key in ("MODEL", "MODEL_API_KEY", "MODEL_BASE_URL", "GITHUB_TOKEN")
+        }
+        try:
+            os.environ["MODEL"] = "gpt-4o-mini"
+            buf = io.StringIO()
+            with redirect_stderr(buf):
+                self.assertIsNone(
+                    celebrate.ask_model("merge", "docs: readme", "", "alice", "@alice")
+                )
+            err = buf.getvalue()
+            self.assertIn("model skipped: no API key", err)
+            self.assertIn("OPENAI_API_KEY", err)
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_default_merge_topic_reads_the_title(self) -> None:
+        celebrate = _load()
+        self.assertEqual(celebrate.DEFAULT_TOPICS["merge"], "title")
+        self.assertEqual(celebrate.moment_topic("merge", ""), "title")
+        self.assertEqual(
+            celebrate.resolve_group("docs: readme", celebrate.moment_topic("merge")),
+            "docs",
+        )
 
     def test_main_uses_locale_when_the_message_is_default(self) -> None:
         celebrate = _load()
@@ -1408,7 +1450,7 @@ class CelebrateTest(unittest.TestCase):
                 else:
                     os.environ[key] = value
 
-    def test_main_names_work_from_pr_files_without_a_model(self) -> None:
+    def test_main_names_work_from_the_title_without_a_model(self) -> None:
         celebrate = _load()
         saved = {
             key: os.environ.pop(key, None)
@@ -1444,8 +1486,8 @@ class CelebrateTest(unittest.TestCase):
                 code = celebrate.main()
             out = buf.getvalue()
             self.assertEqual(code, 0)
-            self.assertIn("Merged the readme — thank you @alice.", out)
-            self.assertNotIn("Merged the python", out)
+            self.assertIn("Merged the python client — thank you @alice.", out)
+            self.assertNotIn("Merged the readme", out)
         finally:
             for key, value in saved.items():
                 if value is None:

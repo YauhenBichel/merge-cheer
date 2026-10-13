@@ -14,8 +14,8 @@ variables:
   - name: BITBUCKET_ACCESS_TOKEN
     description: Repository access token with pullrequest write.
   - name: TOPIC
-    default: auto
-    description: GIF group. auto picks a random theme. Pin python, devops, comic, …
+    default: title
+    description: GIF group. title picks from the PR title. auto is a random theme. Pin python, devops, comic, …
   - name: MESSAGE
     default: "Merged — thank you @{author}."
   - name: LOCALE

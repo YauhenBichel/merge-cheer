@@ -1,8 +1,8 @@
 spec:
   inputs:
     topic:
-      default: auto
-      description: GIF group. auto picks a random theme. Pin python, devops, comic, …
+      default: title
+      description: GIF group. title picks from the MR title. auto is a random theme. Pin python, devops, comic, …
     message:
       default: "Merged — thank you @{author}."
       description: Comment text. `{author}` becomes the merge request author.

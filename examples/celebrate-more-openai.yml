@@ -6,7 +6,7 @@
 #   Name: OPENAI_API_KEY
 #   Value: your OpenAI (or OpenAI-compatible) key
 #
-# @v1.7.0 drops generic thanks.
+# @v1.9.0 drops generic thanks.
 
 name: Celebrate merge
 on:
@@ -29,7 +29,7 @@ jobs:
       )
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.8.0
+      - uses: YauhenBichel/merge-cheer@v1.9.0
         with:
           model: gpt-4o-mini
           model-api-key: ${{ secrets.OPENAI_API_KEY }}

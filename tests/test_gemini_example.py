@@ -32,7 +32,7 @@ class GeminiExampleTest(unittest.TestCase):
             },
         )
         for required in (
-            "@v1.8.0",
+            "@v1.9.0",
             "pull_request_target:",
             "types: [closed]",
             "github.event.pull_request.merged",

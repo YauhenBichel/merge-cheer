@@ -4,7 +4,7 @@
 # include:
 #   - component: $CI_SERVER_FQDN/YauhenBichel/merge-cheer/merge-cheer@v1.8.0
 #     inputs:
-#       topic: auto
+#       topic: title
 #       token: $GITLAB_TOKEN
 
 celebrate:
@@ -13,7 +13,7 @@ celebrate:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
   variables:
-    TOPIC: auto
+    TOPIC: title
     ACTION_REF: v1.8.0
     # SHA-256 of celebrate.py from the release notes. The script runs with your
     # token, so pin it: the job then refuses any other file.

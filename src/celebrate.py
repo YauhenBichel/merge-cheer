@@ -729,7 +729,7 @@ def localize_message(moment: str, message: str, locale: str) -> str:
     return pack.get(moment) or DEFAULT_MESSAGES.get(moment, text)
 
 DEFAULT_TOPICS = {
-    "merge": "auto",
+    "merge": "title",
     "closed": "coffee",
     "changes": "yeah",
 }
@@ -762,7 +762,7 @@ def detect_moment(
 
 def moment_topic(
     moment: str,
-    topic: str = "auto",
+    topic: str = "title",
     closed_topic: str = "",
     changes_topic: str = "",
 ) -> str:
@@ -1165,6 +1165,31 @@ def title_hint(title: str) -> str:
     return ""
 
 
+_TYPE_PREFIX = re.compile(
+    r"^(?:feat|fix|docs?|chore|test|tests|build|ci|refactor|perf|"
+    r"style|revert|bump)(?:\([^)]*\))?:\s*",
+    re.I,
+)
+
+
+def title_phrase(title: str) -> str:
+    """Short G-rated remainder of the title, without the conventional prefix."""
+    text = _TYPE_PREFIX.sub("", (title or "").strip())
+    words: list[str] = []
+    for word in re.findall(r"[a-z0-9][a-z0-9._-]{2,}", text.lower()):
+        if word in _TITLE_STOP:
+            continue
+        if not is_grated(word):
+            continue
+        words.append(word)
+        if len(words) >= 8:
+            break
+    phrase = " ".join(words)
+    if len(phrase) > 72:
+        phrase = phrase[:72].rsplit(" ", 1)[0]
+    return phrase
+
+
 def file_hint(files: list[str] | None) -> str:
     """First specific word from pull request file names. Basename first."""
     for raw in files or []:
@@ -1184,8 +1209,8 @@ def file_hint(files: list[str] | None) -> str:
 
 
 def work_hint(title: str, files: list[str] | None = None) -> str:
-    """Prefer a file name when one exists; otherwise the title word."""
-    return file_hint(files) or title_hint(title)
+    """Name the work: title phrase first, then a file name."""
+    return title_phrase(title) or title_hint(title) or file_hint(files)
 
 
 def with_title_hint(
@@ -1336,6 +1361,12 @@ def _ask_model(
 ) -> str | None:
     cfg = model_settings()
     if not cfg:
+        if os.environ.get("MODEL", "").strip():
+            _warn_model_skipped(
+                "no API key. Set model-api-key (for OpenAI, "
+                "secrets.OPENAI_API_KEY) or use model: github "
+                "with models: read on GITHUB_TOKEN"
+            )
         return None
     key, model, base = cfg
     parsed_base = urllib.parse.urlparse(base)
@@ -1407,10 +1438,10 @@ def _ask_model(
 
 def topic_is_default(moment: str, topic: str) -> bool:
     chosen = normalize_topic(topic)
-    if chosen in {"", "auto"}:
+    default = normalize_topic(DEFAULT_TOPICS.get(moment, "title"))
+    if not (topic or "").strip():
         return True
-    default = normalize_topic(DEFAULT_TOPICS.get(moment, "auto"))
-    return moment != "merge" and chosen == default
+    return chosen == default
 
 
 def message_is_default(moment: str, message: str) -> bool:
@@ -1680,7 +1711,7 @@ def main() -> int:
     title = os.environ.get("PR_TITLE", "")
     pr_body = os.environ.get("PR_BODY", "")
     labels = os.environ.get("PR_LABELS", "")
-    topic = os.environ.get("TOPIC", "auto")
+    topic = os.environ.get("TOPIC", "title")
     association = os.environ.get("PR_AUTHOR_ASSOCIATION", "")
     author = os.environ.get("PR_AUTHOR", "").strip()
     number = os.environ.get("PR_NUMBER", "").strip()

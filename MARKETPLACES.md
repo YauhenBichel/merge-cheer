@@ -80,7 +80,7 @@ Store `BITBUCKET_ACCESS_TOKEN` on the consumer repo (pullrequest write):
 script:
   - pipe: docker://eugenebichel/merge-cheer:1.7.0
     variables:
-      TOPIC: auto
+      TOPIC: title
       BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
 ```
 

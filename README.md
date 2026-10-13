@@ -12,10 +12,10 @@ pull request merges.
 Site: [yauhenbichel.github.io/merge-cheer](https://yauhenbichel.github.io/merge-cheer/) · Marketplace: [merge-cheer](https://github.com/marketplace/actions/merge-cheer)
 
 GIF on merge, no Giphy key, no checkout of the pull request. The action
-ships its own GIF groups and, by default, picks a **random theme**
-(seeded by the pull request number so the same PR stays stable). Pin a
-group with `topic` when you want one mood every time. Use `topic: title`
-to pick from the title and body. A `no-cheer` / `skip-cheer` label (or
+ships its own GIF groups and, by default, picks from the **PR title**
+(`topic: title`). Set `topic: auto` for a random theme (seeded by the
+pull request number so the same PR stays stable). Pin a group with
+`topic` when you want one mood every time. A `no-cheer` / `skip-cheer` label (or
 the same words in the title) skips the comment. On merge, the Action thanks
 co-authors (`{authors}`, up to five, from `Co-authored-by` lines with a GitHub
 noreply address) and reviewers. It will not post a second GIF for the
@@ -91,7 +91,7 @@ This is the model path. Zero-config is still `Merged — thank you
 
 **What.** A human pull request merges. The model writes one short line
 about what landed. The GIF group still comes from `topic`. Default
-`auto` is a random theme. Set `topic: title` to use the title map.
+`title` reads the PR. Set `topic: auto` for a random theme.
 
 **Why.** “Thanks” is empty. A line that names the work is the cheer
 people actually read.
@@ -204,7 +204,7 @@ is needed for the tests.
 ### Keep credits low
 
 The model writes only the thank-you line. The GIF group stays from
-`topic` (`auto` is random, `title` is the map). One call per merge,
+`topic` (`auto` is a random theme, `title` is the map). One call per merge,
 then skip if that pull request already has a cheer. Use `gpt-4o-mini`.
 A bigger model does not help one sentence. Pin `message` when you do
 not want a model call.
@@ -235,7 +235,7 @@ The Catalog row is not live. Copy the curl job.
 celebrate:
   image: python:3.13-alpine
   variables:
-    TOPIC: auto
+    TOPIC: title
     ACTION_REF: v1.8.0
     ACTION_REPO: YauhenBichel/merge-cheer
     ACTION_SHA256: ""   # from the release notes; pins the script
@@ -267,7 +267,7 @@ The Docker Hub pipe is not public. Copy the curl job.
 script:
   - export ACTION_REF=v1.8.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
-  - export TOPIC="${TOPIC:-auto}"
+  - export TOPIC="${TOPIC:-title}"
   - export ACTION_SHA256="${ACTION_SHA256:-}"   # from the release notes
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
   - if [ -n "$ACTION_SHA256" ]; then echo "$ACTION_SHA256  celebrate.py" | sha256sum -c -; fi
@@ -313,9 +313,9 @@ and
 [molecare-desktop #26](https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123).
 
 **How.** Pin `@v1.8.0` on the default branch (see [Install](#install)).
-Leave `topic` unset (or `topic: auto`) for a random theme, seeded by the
-pull request number. Pin `topic: comic` when you want the same mood
-every time.
+Leave `topic` unset (or `topic: title`) to pick from the PR title.
+Set `topic: auto` for a random theme, seeded by the pull request
+number. Pin `topic: comic` when you want the same mood every time.
 
 The loops below are the files the Action posts (open a file on GitHub to
 see it move).
@@ -438,7 +438,7 @@ before `qa`. `feat: add python client` still ships.
 | Input | Default | What it does |
 | --- | --- | --- |
 | `github-token` | `${{ github.token }}` | Posts the comment |
-| `topic` | `auto` | Group name, `auto` for a random theme, or `title` to pick from the PR title and body |
+| `topic` | `title` | Group name, `title` to pick from the PR title and body, or `auto` for a random theme |
 | `giphy-api-key` | empty | Optional. When set, try a G-rated Giphy GIF first |
 | `gifs` | empty | Optional https image URLs (comma or newline). Merge only. One is picked, seeded by the pull request number |
 | `gifs-path` | empty | Optional folder on the default branch of `.gif` / `.webp` / `.png` files. Listed via the GitHub API |

@@ -127,7 +127,7 @@
       <li><strong>What.</strong> Merge Cheer comments one G-rated GIF when a human pull request merges. Bots are skipped. The Action does not check out the pull request.</li>
       <li><strong>Why.</strong> The merge is the moment people actually did the work. No Giphy key. The Action ships its own loops, so it works on a new repository with the default token.</li>
       <li><strong>Where.</strong> Code is <a href="https://github.com/YauhenBichel/merge-cheer">YauhenBichel/merge-cheer</a>. Real comments already landed on <a href="https://github.com/YauhenBichel/py-harness/pull/350#issuecomment-5559092736">py-harness #350</a> and <a href="https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123">molecare-desktop #26</a>.</li>
-      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.8.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: auto</code>) for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. Reviewers are thanked on merge. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
+      <li><strong>How.</strong> Pin <code>YauhenBichel/merge-cheer@v1.8.0</code> on the default branch. Leave <code>topic</code> unset (or <code>topic: title</code>) to pick from the PR title. Set <code>topic: auto</code> for a random theme, seeded by the pull request number. Pin <code>topic: comic</code> when you want the same mood every time. A <code>no-cheer</code> label skips the GIF. Co-authors are thanked. Reviewers are thanked on merge. <a href="#ai">Watch the AI demo</a>, then <a href="#model">add an OpenAI key</a> when you want a line about what merged.</li>
     </ul>
 
     <h2>What happens on merge</h2>
@@ -148,7 +148,7 @@
     </div>
 
     <h2>Live loops</h2>
-    <p>Four of the shipped GIFs, looping here. Default <code>topic: auto</code> picks a <strong>random theme</strong> (seeded by the pull request number, so the same PR stays stable). Pin a group when you want one mood every time.</p>
+    <p>Four of the shipped GIFs, looping here. Default <code>topic: title</code> picks from the PR title. <code>topic: auto</code> picks a <strong>random theme</strong> (seeded by the pull request number, so the same PR stays stable). Pin a group when you want one mood every time.</p>
     <div class="demo">
       <figure><img src="gifs/comic/pop.gif" alt="comic pop GIF"><figcaption>comic</figcaption></figure>
       <figure><img src="gifs/sunny/sun.gif" alt="sunny GIF"><figcaption>sunny</figcaption></figure>
@@ -165,7 +165,7 @@
     <p class="mute">Also on the Action: ship, fix, docs, tests, cleanup, celebration, welcome, party, space, magic, coffee, robot, yeah, sre, qa, design, architecture, engineering, backend, java, cpp. <code>topic: title</code> reads the PR title and body (<code>typo</code> / <code>style</code> / <code>lint</code> / <code>format</code> / <code>chore:</code> map to cleanup; <code>build:</code> maps to tests). A <code>no-cheer</code> or <code>skip-cheer</code> label skips the comment. A second run of the same moment does not post another GIF. A changes-requested cheer does not block the merge cheer. <code>locale</code> picks a built-in thank-you (<code>es</code>, <code>de</code>, <code>fr</code>, <code>pt</code>, <code>uk</code>, <code>it</code>, <code>be</code>, <code>ja</code>); a pinned <code>message</code> wins. Unset model keeps the stdlib path.</p>
 
     <h2 id="install">Install</h2>
-    <p>Default is <code>topic: auto</code> — a random shipped theme, then one GIF in that group. Pin <code>@v1.8.0</code> (current release).</p>
+    <p>Default is <code>topic: title</code> — a GIF from the PR title, then one GIF in that group. Pin <code>@v1.8.0</code> (current release). Set <code>topic: auto</code> for a random theme.</p>
 
     <h3>GitHub</h3>
     <ol class="steps">
@@ -200,7 +200,7 @@ jobs:
     <pre>celebrate:
   image: python:3.13-alpine
   variables:
-    TOPIC: auto
+    TOPIC: title
     ACTION_REF: v1.8.0
     ACTION_REPO: YauhenBichel/merge-cheer
   script:
@@ -218,7 +218,7 @@ jobs:
     <pre>script:
   - export ACTION_REF=v1.8.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
-  - export TOPIC="${TOPIC:-auto}"
+  - export TOPIC="${TOPIC:-title}"
   - curl -fsSL "https://raw.githubusercontent.com/YauhenBichel/merge-cheer/${ACTION_REF}/src/celebrate.py" -o celebrate.py
   - python3 celebrate.py</pre>
     <p class="mute">The Docker Hub pipe is not public. How to publish a Hub image and <a href="https://support.atlassian.com/bitbucket-cloud/docs/what-are-pipes/">Pipes</a> row later: <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/MARKETPLACES.md">MARKETPLACES.md</a>.</p>
@@ -228,7 +228,7 @@ jobs:
       <a href="merge-cheer-ai-demo.mp4">Download the 20s AI demo</a>
     </video>
     <p class="mute">This is the model path. Zero-config is still <code>Merged — thank you @author</code>.</p>
-    <p>A human pull request merges. The model writes one short line about what landed. The GIF group still comes from <code>topic</code>. Default <code>auto</code> is a random theme. Set <code>topic: title</code> to use the title map. “Thanks” is empty. A line that names the work is the cheer people actually read.</p>
+    <p>A human pull request merges. The model writes one short line about what landed. The GIF group still comes from <code>topic</code>. Default <code>title</code> reads the PR. Set <code>topic: auto</code> for a random theme. “Thanks” is empty. A line that names the work is the cheer people actually read.</p>
     <ul class="why">
       <li><strong>What.</strong> One line about the work. The GIF still comes from <code>topic</code>, not from the model.</li>
       <li><strong>Why.</strong> Generic thanks is not a cheer people keep.</li>
@@ -286,12 +286,12 @@ jobs:
     model-api-key: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
     <p>This uses Anthropic's <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk">OpenAI compatibility layer</a>, intended for evaluation rather than most production use cases. Multi-workspace keys require an <code>anthropic-workspace-id</code> header this Action does not expose; use a single-workspace key. The example pins Haiku 4.5. Errors, rate limits, and unsafe or malformed replies fall back to the default thank-you. No pull request head checkout or live key is needed for the tests.</p>
     <h3 id="credits">Keep credits low</h3>
-    <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is random, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
+    <p>The model writes only the thank-you line. The GIF group stays from <code>topic</code> (<code>auto</code> is a random theme, <code>title</code> is the map). One call per merge, then skip if that pull request already has a cheer. Use <code>gpt-4o-mini</code>. A 429 is not retried — the stdlib line posts instead. Pin <code>message</code> when you do not want a model call.</p>
 
     <h2 id="cases">Cases</h2>
     <p>The Action already handles these. The videos above are two of them.</p>
     <ul class="why">
-      <li><strong>Zero-config merge.</strong> <code>Merged the readme — thank you @alice</code> when the title has a usable word, else <code>Merged — thank you @alice</code>. Default <code>topic: auto</code> is a random group, seeded by the pull request number.</li>
+      <li><strong>Zero-config merge.</strong> <code>Merged the readme — thank you @alice</code> when the title has a usable word, else <code>Merged — thank you @alice</code>. Default <code>topic: title</code> picks the GIF from the PR. Set <code>topic: auto</code> for a random group, seeded by the pull request number.</li>
       <li><strong>Model merge.</strong> Live on <a href="https://github.com/YauhenBichel/merge-cheer/pull/53#issuecomment-5574024316">#53</a>. The model writes the line. The GIF still comes from <code>topic</code>, not from the model.</li>
       <li><strong>Closed without merge.</strong> <code>Closed — thank you for the work</code>. <code>closed-topic</code> defaults to coffee. Copy <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-more.yml">examples/celebrate-more.yml</a>. The model path is <a href="https://github.com/YauhenBichel/merge-cheer/blob/main/examples/celebrate-more-openai.yml">examples/celebrate-more-openai.yml</a> — the GIF stays coffee.</li>
       <li><strong>Changes requested.</strong> <code>A bit more work — you have this</code>. <code>changes-topic</code> defaults to yeah. Same two example files. The model writes the line. The GIF stays yeah.</li>

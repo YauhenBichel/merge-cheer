@@ -53,7 +53,7 @@ Groups today: `ship`, `fix`, `docs`, `tests`, `cleanup`,
 `celebration`, `welcome`, `party`, `space`, `magic`, `coffee`, `robot`,
 `comic`, `sunny`, `game`, `sticker`, `yeah`, `devops`, `sre`, `qa`,
 `design`, `architecture`, `engineering`, `backend`, `frontend`, `java`,
-`python`, `cpp`, `golang`.
+`python`, `cpp`, `golang`, `christmas`, `newyear`.
 
 Design questions go in [Discussions](https://github.com/YauhenBichel/merge-cheer/discussions), not a drive-by PR.
 

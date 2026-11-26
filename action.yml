@@ -17,7 +17,8 @@ inputs:
       Groups: ship, fix, docs, tests, cleanup, celebration, welcome,
       party, space, magic, coffee, robot, comic, sunny, game, sticker,
       yeah, devops, sre, qa, design, architecture, engineering,
-      backend, frontend, java, python, cpp, golang.
+      backend, frontend, java, python, cpp, golang. Seasonal, never
+      picked by auto: christmas, newyear.
     required: false
     default: "title"
   giphy-api-key:

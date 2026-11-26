@@ -290,8 +290,11 @@ names: `auto`, `title`, `ship`, `fix`, `docs`, `tests`, `cleanup`,
 `celebration`, `welcome`, `party`, `space`, `magic`, `coffee`, `robot`,
 `comic`, `sunny`, `game`, `sticker`, `yeah`, `devops`, `sre`, `qa`,
 `design`, `architecture`, `engineering`, `backend`, `frontend`, `java`,
-`python`, `cpp`, `golang`. An unknown name falls back
-to `celebration` and prints the list.
+`python`, `cpp`, `golang`, `christmas`, `newyear`. An unknown name falls
+back to `celebration` and prints the list.
+
+`christmas` and `newyear` are seasonal: pin them, or put the word in the
+pull request title. `auto` never picks them.
 
 ## Live demo
 
@@ -347,6 +350,10 @@ see it move).
 | java | python | cpp | golang |
 | --- | --- | --- | --- |
 | ![java](gifs/java/mug.gif) | ![python](gifs/python/snake.gif) | ![cpp](gifs/cpp/plus.gif) | ![golang](gifs/golang/gopher.gif) |
+
+| christmas | christmas | newyear | newyear |
+| --- | --- | --- | --- |
+| ![christmas tree](gifs/christmas/tree.gif) | ![christmas gift](gifs/christmas/gift.gif) | ![new year fireworks](gifs/newyear/fireworks.gif) | ![new year clock](gifs/newyear/clock.gif) |
 
 This repository dogfoods
 [.github/workflows/celebrate.yml](.github/workflows/celebrate.yml)
@@ -410,6 +417,8 @@ file in the group (stable for a given pull request number).
 | `python` | `python`, `django`, `flask` | ![python](gifs/python/snake.gif) |
 | `cpp` | `c++`, `cpp` | ![cpp](gifs/cpp/plus.gif) |
 | `golang` | `golang`, `gopher` | ![golang](gifs/golang/gopher.gif) |
+| `christmas` | `christmas`, `xmas` | ![christmas](gifs/christmas/tree.gif) |
+| `newyear` | `new year`, `new-year` | ![newyear](gifs/newyear/fireworks.gif) |
 
 `welcome` also wins on `topic: title` when GitHub marks the author
 `FIRST_TIME_CONTRIBUTOR` or `FIRST_TIMER` and the title did not match
@@ -417,7 +426,9 @@ another group. It reuses the tests and celebration loops — no extra art.
 The comment adds `First contribution — welcome.` for those authors.
 
 Conventional title types (`fix`, `feat`, `docs`, `test`, `refactor`)
-win before mood keywords, so `feat: add party mode` still ships.
+win before mood keywords, so `feat: add party mode` still ships. The
+two seasonal groups are the exception and win first, so
+`chore: happy new year` gets fireworks.
 
 Aliases: `launch` → `ship`, `nailed-it` → `fix`, `nice-work` → `docs`,
 `ci` / `high-five` → `tests`, `refactor` → `cleanup`, `first` → `welcome`,
@@ -428,7 +439,8 @@ Aliases: `launch` → `ship`, `nailed-it` → `fix`, `nice-work` → `docs`,
 `k8s` / `docker` → `devops`, `on-call` → `sre`, `testing` / `sdet` → `qa`,
 `ux` / `figma` → `design`, `arch` → `architecture`, `swe` → `engineering`,
 `js` / `react` → `frontend`, `jdk` → `java`, `py` → `python`,
-`c++` → `cpp`, `go` / `gopher` → `golang`.
+`c++` → `cpp`, `go` / `gopher` → `golang`, `xmas` / `noel` → `christmas`,
+`new-year` / `nye` → `newyear`.
 
 `javascript` does not match `java`. Conventional `test` / `ci` still win
 before `qa`. `feat: add python client` still ships.
@@ -513,6 +525,10 @@ Writes `gifs/<group>/<name>.gif`. Keep each file under 180 KB. A group
 may hold several files; `alt.gif` is the same still with the pulse
 inverted. Mood groups (`party`, `space`, `magic`, `coffee`, `robot`, `comic`,
 `sunny`, `game`, `sticker`, `yeah`) each ship two original stills.
+
+`christmas` and `newyear` have no still. They are drawn frame by frame
+in [scripts/seasonal_art.py](scripts/seasonal_art.py), so the snow falls
+and the fireworks open instead of one picture pulsing.
 
 ## License
 

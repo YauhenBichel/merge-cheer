@@ -953,7 +953,7 @@ class CelebrateTest(unittest.TestCase):
         self.assertIn("celebrate.py", component)
         self.assertIn("release:", gitlab_ci)
         self.assertIn("python3 -m unittest discover -s tests -q", gitlab_ci)
-        self.assertIn("eugenebichel/merge-cheer:1.7.0", pipe)
+        self.assertIn("eugenebichel/merge-cheer:1.10.0", pipe)
         self.assertIn("ACTION_REF: v1.10.0", example_gl)
         self.assertIn("ACTION_REF=v1.10.0", example_bb)
         more = (ROOT / "examples" / "celebrate-more.yml").read_text(encoding="utf-8")

@@ -1,5 +1,5 @@
 name: Merge Cheer
-image: eugenebichel/merge-cheer:1.7.0
+image: eugenebichel/merge-cheer:1.10.0
 description: Comment a G-rated celebration GIF when a pull request merges. No Giphy key.
 category: Utilities
 repository: https://github.com/YauhenBichel/merge-cheer

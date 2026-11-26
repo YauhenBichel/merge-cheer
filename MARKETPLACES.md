@@ -78,7 +78,7 @@ Store `BITBUCKET_ACCESS_TOKEN` on the consumer repo (pullrequest write):
 
 ```yaml
 script:
-  - pipe: docker://eugenebichel/merge-cheer:1.7.0
+  - pipe: docker://eugenebichel/merge-cheer:1.10.0
     variables:
       TOPIC: title
       BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN

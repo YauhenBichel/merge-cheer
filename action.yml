@@ -18,9 +18,20 @@ inputs:
       party, space, magic, coffee, robot, comic, sunny, game, sticker,
       yeah, devops, sre, qa, design, architecture, engineering,
       backend, frontend, java, python, cpp, golang. Seasonal, never
-      picked by auto: christmas, newyear.
+      picked by auto: christmas, newyear, halloween, hacktoberfest,
+      birthday.
     required: false
     default: "title"
+  seasonal:
+    description: >
+      Set true to switch the merge GIF by date (UTC, the day the pull
+      request merged): christmas on 24-26 December, newyear on 31
+      December and 1 January, halloween on 31 October, birthday on the
+      repository's own anniversary, hacktoberfest in October for pull
+      requests labelled hacktoberfest or hacktoberfest-accepted. A
+      pinned topic always wins.
+    required: false
+    default: "false"
   giphy-api-key:
     description: Optional Giphy key. When unset, the bundled GIFs are used.
     required: false
@@ -117,6 +128,9 @@ runs:
         NOTE: ${{ inputs.note }}
         LOCALE: ${{ inputs.locale }}
         TOPIC: ${{ inputs.topic }}
+        SEASONAL: ${{ inputs.seasonal }}
+        PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+        REPO_CREATED_AT: ${{ github.event.repository.created_at }}
         CLOSED_TOPIC: ${{ inputs.closed-topic }}
         CLOSED_MESSAGE: ${{ inputs.closed-message }}
         CHANGES_TOPIC: ${{ inputs.changes-topic }}

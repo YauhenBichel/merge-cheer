@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import datetime
 import html
 import json
 import os
@@ -51,12 +52,15 @@ GROUPS = (
     "golang",
     "christmas",
     "newyear",
+    "halloween",
+    "hacktoberfest",
+    "birthday",
 )
 
 # Valid as `topic` and from a title keyword, but never picked by `auto`:
 # a tree in July would be odd. Leaving them out also keeps the `auto`
 # pick for an existing pull request number unchanged.
-SEASONAL_GROUPS = ("christmas", "newyear")
+SEASONAL_GROUPS = ("christmas", "newyear", "halloween", "hacktoberfest", "birthday")
 
 # Extra spellings that resolve to a group. `auto` and `title` are not aliases.
 ALIASES = {
@@ -159,6 +163,13 @@ ALIASES = {
     "new-year": "newyear",
     "happy-new-year": "newyear",
     "nye": "newyear",
+    "halloween": "halloween",
+    "spooky": "halloween",
+    "hacktoberfest": "hacktoberfest",
+    "hacktober": "hacktoberfest",
+    "birthday": "birthday",
+    "anniversary": "birthday",
+    "bday": "birthday",
 }
 
 # Giphy search text when a key is set.
@@ -194,6 +205,9 @@ GIPHY_TAG = {
     "golang": "golang",
     "christmas": "merry christmas",
     "newyear": "happy new year",
+    "halloween": "happy halloween",
+    "hacktoberfest": "autumn leaves",
+    "birthday": "happy birthday",
 }
 
 # Alt text for the posted image.
@@ -229,6 +243,9 @@ LABEL = {
     "golang": "golang",
     "christmas": "merry christmas",
     "newyear": "happy new year",
+    "halloween": "happy halloween",
+    "hacktoberfest": "hacktoberfest",
+    "birthday": "happy birthday",
 }
 
 FIRST_TIMERS = frozenset({"FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR"})
@@ -241,6 +258,9 @@ _TITLE_RULES = (
     # to ship.
     ("christmas", ("christmas", "xmas", "x-mas")),
     ("newyear", ("new year", "new-year", "newyear")),
+    ("halloween", ("halloween", "spooky")),
+    ("hacktoberfest", ("hacktoberfest",)),
+    ("birthday", ("birthday", "anniversary")),
     ("fix", ("fix", "bug", "hotfix", "patch", "revert:", "revert ")),
     ("ship", ("feat", "add ", "added", "new ", "launch", "ship:", "ship ", "perf:", "perf ")),
     ("docs", ("doc", "readme")),
@@ -361,6 +381,54 @@ def resolve_group(
     return chosen
 
 
+_TRUE = ("1", "true", "yes", "on")
+HACKTOBERFEST_LABELS = ("hacktoberfest", "hacktoberfest-accepted")
+
+
+def parse_day(value: str) -> datetime.date | None:
+    """The date part of an ISO timestamp such as 2026-12-25T10:00:00Z."""
+    try:
+        return datetime.date.fromisoformat((value or "").strip()[:10])
+    except ValueError:
+        return None
+
+
+def seasonal_group(
+    day: datetime.date,
+    labels: str = "",
+    repo_created: datetime.date | None = None,
+) -> str:
+    """The seasonal group for this day, or "" on an ordinary day.
+
+    Days are UTC, taken from when the pull request merged. Fixed
+    holidays come first, then the repository's own birthday, then
+    Hacktoberfest, which also needs the label so that an October of
+    merges is not all one theme.
+    """
+    month_day = (day.month, day.day)
+    if month_day in ((12, 24), (12, 25), (12, 26)):
+        return "christmas"
+    if month_day in ((12, 31), (1, 1)):
+        return "newyear"
+    if month_day == (10, 31):
+        return "halloween"
+    if (
+        repo_created is not None
+        and day.year > repo_created.year
+        and month_day == (repo_created.month, repo_created.day)
+    ):
+        return "birthday"
+    if day.month == 10:
+        names = {name.strip().lower() for name in (labels or "").split(",")}
+        if names & set(HACKTOBERFEST_LABELS):
+            return "hacktoberfest"
+    return ""
+
+
+def seasonal_enabled(value: str) -> bool:
+    return (value or "").strip().lower() in _TRUE
+
+
 def action_root() -> Path:
     override = os.environ.get("ACTION_PATH", "").strip()
     if override:
@@ -371,12 +439,12 @@ def action_root() -> Path:
 # Filenames the Action ships. Used when gifs/ is not on disk (GitLab /
 # Bitbucket curl the script only). Keep in sync with scripts/make_gifs.py.
 BUNDLED_GIFS = {
-    "ship": ("ship-it.gif", "alt.gif", "boost.gif"),
-    "fix": ("nailed-it.gif", "alt.gif", "spark.gif"),
+    "ship": ("ship-it.gif", "alt.gif", "boost.gif", "rocket.gif"),
+    "fix": ("nailed-it.gif", "alt.gif", "spark.gif", "wrench.gif"),
     "docs": ("nice-work.gif", "alt.gif", "glow.gif"),
     "tests": ("high-five.gif", "alt.gif"),
     "cleanup": ("cleanup.gif", "alt.gif", "sweep.gif"),
-    "celebration": ("celebration.gif", "alt.gif", "burst.gif"),
+    "celebration": ("celebration.gif", "alt.gif", "burst.gif", "trophy.gif"),
     "welcome": ("high-five.gif", "celebration.gif"),
     "party": ("confetti.gif", "toast.gif"),
     "space": ("planet.gif", "comet.gif"),
@@ -402,6 +470,9 @@ BUNDLED_GIFS = {
     "golang": ("gopher.gif", "wave.gif"),
     "christmas": ("tree.gif", "gift.gif"),
     "newyear": ("fireworks.gif", "clock.gif"),
+    "halloween": ("pumpkin.gif", "ghost.gif"),
+    "hacktoberfest": ("leaves.gif", "branch.gif"),
+    "birthday": ("cake.gif", "balloons.gif"),
 }
 
 
@@ -1836,7 +1907,23 @@ def main() -> int:
             files = list_pr_files(token, repo, number)
     logins = people_to_credit(moment, author, pr_body, commit_text, reviewers)
     authors = format_authors(logins)
-    group = resolve_group(title, topic, association, number, pr_body)
+    group = ""
+    # Opt-in, merges only, and never over a pinned topic.
+    if (
+        moment == "merge"
+        and seasonal_enabled(os.environ.get("SEASONAL", ""))
+        and normalize_topic(topic) in ("auto", "title")
+    ):
+        day = parse_day(os.environ.get("PR_MERGED_AT", "")) or datetime.datetime.now(
+            datetime.timezone.utc
+        ).date()
+        group = seasonal_group(
+            day, labels, parse_day(os.environ.get("REPO_CREATED_AT", ""))
+        )
+        if group:
+            print(f"seasonal: {group} for {day.isoformat()}")
+    if not group:
+        group = resolve_group(title, topic, association, number, pr_body)
     if message_is_default(moment, message):
         hinted = ask_model(moment, title, pr_body, author, authors, files)
         if hinted:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Seasonal GIFs drawn in code: christmas and newyear.
+"""Seasonal GIFs drawn in code: christmas, newyear, halloween,
+hacktoberfest and birthday.
 
 Unlike the stills in stills/, these have real motion: snow falls, lights
 twinkle, fireworks open. Every position is a function of t in [0, 1), so
@@ -285,12 +286,238 @@ def newyear_clock(t: float, size: int) -> Image.Image:
     return canvas.done(size)
 
 
+ORANGE = (255, 146, 43)
+DEEP_ORANGE = (232, 106, 23)
+BROWN = (140, 94, 60)
+CREAM = (255, 244, 224)
+AUTUMN = (ORANGE, RED, GOLD, (196, 98, 45), (224, 168, 60))
+
+
+def _leaves(canvas: _Canvas, t: float, seed: int, count: int) -> None:
+    """Autumn leaves: pointed ovals that turn as they fall."""
+    rng = random.Random(seed)
+    for _ in range(count):
+        x0, y0 = rng.random(), rng.random()
+        laps = rng.choice((1, 1, 2))
+        sway = rng.uniform(0.02, 0.06)
+        phase = rng.random()
+        size = rng.uniform(0.022, 0.036)
+        color = rng.choice(AUTUMN)
+        y = (y0 + laps * t) % 1.0 * 1.12 - 0.06
+        x = x0 + sway * math.sin(TAU * (t + phase))
+        turn = TAU * (laps * t + phase)
+        ax, ay = math.cos(turn) * size, math.sin(turn) * size
+        bx, by = -ay * 0.45, ax * 0.45
+        canvas.poly([(x + ax, y + ay), (x + bx, y + by), (x - ax, y - ay), (x - bx, y - by)], color)
+
+
+def _bat(canvas: _Canvas, x: float, y: float, s: float, flap: float, color: tuple) -> None:
+    lift = s * (0.2 + 0.6 * flap)
+    for side in (-1, 1):
+        canvas.poly(
+            [
+                (x, y),
+                (x + side * s * 0.6, y - lift),
+                (x + side * s * 1.3, y - lift * 0.2),
+                (x + side * s * 0.9, y + s * 0.2),
+                (x + side * s * 0.55, y),
+                (x + side * s * 0.3, y + s * 0.25),
+            ],
+            color,
+        )
+    canvas.circle(x, y, s * 0.28, color)
+
+
+def _bats(canvas: _Canvas, t: float, color: tuple) -> None:
+    for index, (y, s, offset, direction) in enumerate(
+        ((0.16, 0.05, 0.0, 1), (0.3, 0.035, 0.45, -1), (0.1, 0.03, 0.7, 1))
+    ):
+        along = (t + offset) % 1.0
+        x = -0.15 + 1.3 * along if direction > 0 else 1.15 - 1.3 * along
+        flap = 0.5 + 0.5 * math.sin(TAU * (4 * t + index / 3))
+        _bat(canvas, x, y + 0.02 * math.sin(TAU * (2 * t + offset)), s, flap, color)
+
+
+def halloween_pumpkin(t: float, size: int) -> Image.Image:
+    bg = (38, 22, 60)
+    canvas = _Canvas(size, bg, (98, 44, 96))
+    canvas.circle(0.78, 0.2, 0.13, (255, 236, 170))
+    canvas.circle(0.74, 0.17, 0.025, (240, 214, 140))
+    canvas.circle(0.82, 0.24, 0.018, (240, 214, 140))
+    _bats(canvas, t, (20, 12, 34))
+    canvas.draw.ellipse([canvas.p(-0.3), canvas.p(0.84), canvas.p(1.3), canvas.p(1.3)], fill=(24, 14, 40))
+    bob = 0.01 * math.sin(TAU * t)
+    flicker = 0.5 + 0.5 * math.sin(TAU * 3 * t)
+    cy = 0.64 + bob
+    canvas.circle(0.5, cy, 0.3 + 0.015 * flicker, _mix(bg, ORANGE, 0.22 + 0.1 * flicker))
+    canvas.rect(0.47, cy - 0.3, 0.53, cy - 0.17, (96, 140, 70), r=0.015)
+    for dx, rx, color in ((-0.15, 0.13, DEEP_ORANGE), (0.15, 0.13, DEEP_ORANGE), (-0.07, 0.14, ORANGE), (0.07, 0.14, ORANGE), (0, 0.11, (255, 165, 70))):
+        canvas.draw.ellipse(
+            [canvas.p(0.5 + dx - rx), canvas.p(cy - 0.2), canvas.p(0.5 + dx + rx), canvas.p(cy + 0.2)],
+            fill=color,
+        )
+    canvas.face(0.5, cy - 0.01, 0.075, blink=0.4 < t < 0.47)
+    return canvas.done(size)
+
+
+def halloween_ghost(t: float, size: int) -> Image.Image:
+    bg = (20, 40, 60)
+    canvas = _Canvas(size, bg, (44, 72, 96))
+    rng = random.Random(4)
+    for index in range(18):
+        twinkle = 0.5 + 0.5 * math.sin(TAU * (t + index / 6))
+        canvas.circle(rng.random(), rng.random() * 0.8, 0.005, _mix(bg, SNOW, 0.3 + 0.6 * twinkle))
+    _bats(canvas, (t + 0.3) % 1.0, (10, 22, 36))
+    lift = 0.03 * math.sin(TAU * t)
+    lean = 0.02 * math.sin(TAU * t + 1.2)
+    cx, cy = 0.5 + lean, 0.46 + lift
+    canvas.draw.ellipse(
+        [canvas.p(0.32 - lift), canvas.p(0.86), canvas.p(0.68 + lift), canvas.p(0.91)],
+        fill=_mix(bg, (0, 0, 0), 0.35),
+    )
+    white = (250, 250, 255)
+    canvas.circle(cx, cy, 0.2, white)
+    canvas.rect(cx - 0.2, cy, cx + 0.2, cy + 0.26, white)
+    wave = 0.012 * math.sin(TAU * 2 * t)
+    for index in range(4):
+        canvas.circle(cx - 0.15 + index * 0.1, cy + 0.26 + (wave if index % 2 else -wave), 0.05, white)
+    for side in (-1, 1):
+        wag = 0.03 * math.sin(TAU * 2 * t + side)
+        canvas.circle(cx + side * 0.22, cy + 0.08 + wag, 0.05, white)
+    canvas.face(cx, cy - 0.01, 0.07, blink=0.7 < t < 0.77)
+    for index, (sx, sy) in enumerate(((0.14, 0.3), (0.86, 0.42), (0.16, 0.72), (0.86, 0.76))):
+        pulse = 0.5 + 0.5 * math.sin(TAU * (t * 2 + index / 4))
+        _sparkle(canvas, sx, sy, 0.045 * pulse, GOLD)
+    return canvas.done(size)
+
+
+def hacktoberfest_leaves(t: float, size: int) -> Image.Image:
+    canvas = _Canvas(size, (255, 238, 214), (255, 212, 160))
+    _leaves(canvas, t, 17, 9)
+    bob = 0.008 * math.sin(TAU * t)
+    canvas.draw.ellipse([canvas.p(0.18), canvas.p(0.82), canvas.p(0.82), canvas.p(0.88)], fill=(236, 180, 120))
+    canvas.rect(0.22, 0.26 + bob, 0.78, 0.7 + bob, (58, 52, 78), r=0.04)
+    canvas.rect(0.255, 0.295 + bob, 0.745, 0.665 + bob, (36, 32, 54), r=0.02)
+    canvas.rect(0.14, 0.7 + bob, 0.86, 0.78 + bob, (92, 84, 118), r=0.03)
+    canvas.rect(0.42, 0.715 + bob, 0.58, 0.735 + bob, (58, 52, 78), r=0.01)
+    # A small merge on the screen: two commits join one.
+    glow = 0.5 + 0.5 * math.sin(TAU * 2 * t)
+    canvas.line(0.33, 0.6 + bob, 0.33, 0.36 + bob, TEAL, 0.012)
+    canvas.line(0.33, 0.56 + bob, 0.43, 0.48 + bob, VIOLET, 0.012)
+    canvas.line(0.43, 0.48 + bob, 0.33, 0.4 + bob, VIOLET, 0.012)
+    canvas.circle(0.33, 0.6 + bob, 0.02, TEAL)
+    canvas.circle(0.43, 0.48 + bob, 0.02, VIOLET)
+    canvas.circle(0.33, 0.37 + bob, 0.022 + 0.008 * glow, _mix(TEAL, (255, 255, 255), 0.5 * glow))
+    canvas.circle(0.58, 0.47 + bob, 0.1, GOLD)
+    canvas.face(0.58, 0.45 + bob, 0.05, blink=0.3 < t < 0.37)
+    _leaves(canvas, (t + 0.5) % 1.0, 29, 5)
+    return canvas.done(size)
+
+
+def _along(points: list, k: float) -> tuple:
+    lengths = [math.dist(points[i], points[i + 1]) for i in range(len(points) - 1)]
+    target = k * sum(lengths)
+    for index, length in enumerate(lengths):
+        if target <= length or index == len(lengths) - 1:
+            part = 0.0 if length == 0 else min(1.0, target / length)
+            (x0, y0), (x1, y1) = points[index], points[index + 1]
+            return x0 + (x1 - x0) * part, y0 + (y1 - y0) * part
+        target -= length
+    return points[-1]
+
+
+def hacktoberfest_branch(t: float, size: int) -> Image.Image:
+    bg = (34, 26, 52)
+    canvas = _Canvas(size, bg, (70, 40, 70))
+    _leaves(canvas, t, 41, 8)
+    main = [(0.34, 0.9), (0.34, 0.3)]
+    branch = [(0.34, 0.78), (0.66, 0.66), (0.66, 0.46), (0.34, 0.3)]
+    canvas.line(*main[0], *main[1], TEAL, 0.022)
+    for a, b in zip(branch, branch[1:]):
+        canvas.line(*a, *b, ORANGE, 0.022)
+    for x, y in ((0.34, 0.9), (0.34, 0.78), (0.34, 0.6), (0.34, 0.45)):
+        canvas.circle(x, y, 0.03, TEAL)
+    for x, y in branch[1:3]:
+        canvas.circle(x, y, 0.03, ORANGE)
+    # A commit rides the branch home; the merge commit swells as it lands.
+    x, y = _along(branch, t)
+    canvas.circle(x, y, 0.03, (255, 255, 255))
+    canvas.circle(x, y, 0.018, GOLD)
+    landing = max(0.0, math.cos(TAU * t)) ** 3
+    radius = 0.1 + 0.02 * landing
+    canvas.circle(0.34, 0.3, radius + 0.015, _mix(bg, GOLD, 0.3 + 0.6 * landing))
+    canvas.circle(0.34, 0.3, radius, GOLD)
+    canvas.face(0.34, 0.285, 0.042, blink=0.5 < t < 0.56)
+    for index, (sx, sy) in enumerate(((0.8, 0.2), (0.86, 0.84), (0.12, 0.14))):
+        pulse = 0.5 + 0.5 * math.sin(TAU * (t * 2 + index / 3))
+        _sparkle(canvas, sx, sy, 0.05 * pulse, CREAM)
+    return canvas.done(size)
+
+
+def birthday_cake(t: float, size: int) -> Image.Image:
+    canvas = _Canvas(size, (220, 242, 255), (188, 224, 255))
+    _falling(canvas, t, 37, 22, (GOLD, PINK, BLUE, TEAL, VIOLET), flake=False)
+    bob = 0.006 * math.sin(TAU * t)
+    canvas.draw.ellipse([canvas.p(0.14), canvas.p(0.8), canvas.p(0.86), canvas.p(0.9)], fill=(255, 255, 255))
+    canvas.rect(0.22, 0.56 + bob, 0.78, 0.85, (255, 170, 190), r=0.04)
+    canvas.rect(0.3, 0.38 + bob, 0.7, 0.58 + bob, CREAM, r=0.04)
+    for index in range(7):
+        drip = 0.012 * math.sin(TAU * t + index)
+        canvas.circle(0.26 + index * 0.08, 0.57 + bob + abs(drip), 0.042, CREAM)
+    for index in range(5):
+        canvas.circle(0.34 + index * 0.08, 0.385 + bob, 0.035, (255, 99, 132))
+    for index, x in enumerate((0.4, 0.5, 0.6)):
+        color = (BLUE, GOLD, TEAL)[index]
+        canvas.rect(x - 0.014, 0.25 + bob, x + 0.014, 0.37 + bob, color, r=0.006)
+        flame = 0.5 + 0.5 * math.sin(TAU * (3 * t + index / 3))
+        lean = 0.008 * math.sin(TAU * (2 * t + index / 3))
+        canvas.draw.ellipse(
+            [canvas.p(x - 0.022 + lean), canvas.p(0.17 + bob - 0.02 * flame), canvas.p(x + 0.022 + lean), canvas.p(0.25 + bob)],
+            fill=ORANGE,
+        )
+        canvas.draw.ellipse(
+            [canvas.p(x - 0.011 + lean), canvas.p(0.2 + bob - 0.01 * flame), canvas.p(x + 0.011 + lean), canvas.p(0.245 + bob)],
+            fill=GOLD,
+        )
+    canvas.face(0.5, 0.68 + bob, 0.07, blink=0.15 < t < 0.22)
+    return canvas.done(size)
+
+
+def birthday_balloons(t: float, size: int) -> Image.Image:
+    canvas = _Canvas(size, (255, 246, 214), (255, 226, 170))
+    _falling(canvas, t, 43, 18, (PINK, BLUE, TEAL, VIOLET, RED), flake=False)
+    knot = (0.5, 0.9)
+    balloons = ((0.27, 0.4, 0.13, BLUE, 0.0), (0.73, 0.38, 0.13, TEAL, 0.33), (0.5, 0.33, 0.17, RED, 0.66))
+    for x, y, r, color, phase in balloons:
+        bx = x + 0.02 * math.sin(TAU * (t + phase))
+        by = y + 0.025 * math.sin(TAU * (t + phase) + 1.5)
+        canvas.line(bx, by + r * 1.2, knot[0], knot[1], (150, 120, 90), 0.006)
+        canvas.draw.ellipse(
+            [canvas.p(bx - r), canvas.p(by - r * 1.15), canvas.p(bx + r), canvas.p(by + r * 1.15)], fill=color
+        )
+        canvas.poly([(bx, by + r * 1.1), (bx - r * 0.14, by + r * 1.32), (bx + r * 0.14, by + r * 1.32)], color)
+        canvas.draw.ellipse(
+            [canvas.p(bx - r * 0.6), canvas.p(by - r * 0.85), canvas.p(bx - r * 0.25), canvas.p(by - r * 0.35)],
+            fill=_mix(color, (255, 255, 255), 0.55),
+        )
+        if color == RED:
+            canvas.face(bx, by + 0.01, 0.06, blink=0.8 < t < 0.87)
+    canvas.circle(knot[0], knot[1], 0.014, (150, 120, 90))
+    return canvas.done(size)
+
+
 # group, output stem, scene
 SCENES = (
     ("christmas", "tree", christmas_tree),
     ("christmas", "gift", christmas_gift),
     ("newyear", "fireworks", newyear_fireworks),
     ("newyear", "clock", newyear_clock),
+    ("halloween", "pumpkin", halloween_pumpkin),
+    ("halloween", "ghost", halloween_ghost),
+    ("hacktoberfest", "leaves", hacktoberfest_leaves),
+    ("hacktoberfest", "branch", hacktoberfest_branch),
+    ("birthday", "cake", birthday_cake),
+    ("birthday", "balloons", birthday_balloons),
 )
 
 

@@ -10,6 +10,8 @@ and `comic` which adds an inverted `pop` as `alt`.
 
 The seasonal groups (`christmas`, `newyear`) have no still: they are
 drawn frame by frame in scripts/seasonal_art.py and have real motion.
+scripts/motion_art.py adds one drawn loop each to `ship`, `fix` and
+`celebration`, next to their stills.
 """
 
 from __future__ import annotations
@@ -22,7 +24,10 @@ from pathlib import Path
 from PIL import Image, ImageEnhance
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import motion_art  # noqa: E402
 import seasonal_art  # noqa: E402
+
+DRAWN_SCENES = seasonal_art.SCENES + motion_art.SCENES
 
 ROOT = Path(__file__).resolve().parents[1]
 STILLS = ROOT / "stills"
@@ -211,7 +216,7 @@ def main() -> int:
         if size > MAX_BYTES:
             print(f"{group}/{dest.name} is over {MAX_BYTES // 1024} KB", file=sys.stderr)
             return 1
-    for group, name, scene in seasonal_art.SCENES:
+    for group, name, scene in DRAWN_SCENES:
         dest = GIFS / group / f"{name}.gif"
         size = render_drawn(scene, dest)
         print(f"{group}/{dest.name} {size // 1024} KB")
@@ -219,7 +224,7 @@ def main() -> int:
             print(f"{group}/{dest.name} is over {MAX_BYTES // 1024} KB", file=sys.stderr)
             return 1
     wanted = {GIFS / group / f"{name}.gif" for _, group, name, _ in VARIANTS}
-    wanted |= {GIFS / group / f"{name}.gif" for group, name, _ in seasonal_art.SCENES}
+    wanted |= {GIFS / group / f"{name}.gif" for group, name, _ in DRAWN_SCENES}
     for leftover in GIFS.rglob("*.gif"):
         if leftover not in wanted:
             leftover.unlink()

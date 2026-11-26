@@ -6,7 +6,7 @@ pull request merges.
 [![CI](https://github.com/YauhenBichel/merge-cheer/actions/workflows/ci.yml/badge.svg)](https://github.com/YauhenBichel/merge-cheer/actions/workflows/ci.yml)
 [![Contributors](https://img.shields.io/github/contributors/YauhenBichel/merge-cheer)](https://github.com/YauhenBichel/merge-cheer/graphs/contributors)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-v1.9.0-6e5494)](https://github.com/marketplace/actions/merge-cheer)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-v1.10.0-6e5494)](https://github.com/marketplace/actions/merge-cheer)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 Site: [yauhenbichel.github.io/merge-cheer](https://yauhenbichel.github.io/merge-cheer/) · Marketplace: [merge-cheer](https://github.com/marketplace/actions/merge-cheer)
@@ -31,7 +31,7 @@ the [site demo](https://yauhenbichel.github.io/merge-cheer/#demo).
 
 ## Install
 
-Pin `@v1.9.0` for an exact version, or `@v1` to follow the 1.x line.
+Pin `@v1.10.0` for an exact version, or `@v1` to follow the 1.x line.
 The Action never checks out the pull request head.
 
 ### GitHub
@@ -54,7 +54,7 @@ jobs:
     if: github.event.pull_request.merged && github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: YauhenBichel/merge-cheer@v1.9.0
+      - uses: YauhenBichel/merge-cheer@v1.10.0
 ```
 
 ### From 2 December 2026: allow `pull_request_target`
@@ -85,7 +85,7 @@ URLs, G-rated, GIFs under 180 KB. The Action does not read pull
 request head.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     gifs-path: .github/merge-cheer
     note: "Come hang out on Discord — https://discord.gg/your-invite"
@@ -119,13 +119,13 @@ people actually read.
 falls back to the stdlib line.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     model: gpt-4o-mini
     model-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-`@v1.9.0` drops generic thanks. A 429 or a junk reply falls back to
+`@v1.10.0` drops generic thanks. A 429 or a junk reply falls back to
 the stdlib line — it is not retried. The Action still does not check
 out the pull request head.
 
@@ -141,7 +141,7 @@ copy [examples/celebrate-huggingface.yml](examples/celebrate-huggingface.yml)
 onto the default branch. No OpenAI key is needed.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     model: meta-llama/Llama-3.1-8B-Instruct:cheapest
     model-base-url: https://router.huggingface.co/v1
@@ -163,7 +163,7 @@ branch. If your key is already stored as `GOOGLE_API_KEY`, change only the
 secret reference in `model-api-key` to `${{ secrets.GOOGLE_API_KEY }}`.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     model: gemini-2.5-flash-lite
     model-base-url: https://generativelanguage.googleapis.com/v1beta/openai
@@ -184,7 +184,7 @@ Add a repository secret `GROQ_API_KEY` from your Groq account, then copy
 branch. No OpenAI key is needed.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     model: openai/gpt-oss-20b
     model-base-url: https://api.groq.com/openai/v1
@@ -205,7 +205,7 @@ Anthropic workspace, then copy
 default branch. No OpenAI key is needed.
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     model: claude-haiku-4-5-20251001
     model-base-url: https://api.anthropic.com/v1
@@ -255,7 +255,7 @@ celebrate:
   image: python:3.13-alpine
   variables:
     TOPIC: title
-    ACTION_REF: v1.9.0
+    ACTION_REF: v1.10.0
     ACTION_REPO: YauhenBichel/merge-cheer
     ACTION_SHA256: ""   # from the release notes; pins the script
   script:
@@ -284,7 +284,7 @@ The Docker Hub pipe is not public. Copy the curl job.
 
 ```yaml
 script:
-  - export ACTION_REF=v1.9.0
+  - export ACTION_REF=v1.10.0
   - export ACTION_REPO=YauhenBichel/merge-cheer
   - export TOPIC="${TOPIC:-title}"
   - export ACTION_SHA256="${ACTION_SHA256:-}"   # from the release notes
@@ -298,7 +298,7 @@ How to publish a Hub image and Pipes row later: [MARKETPLACES.md](MARKETPLACES.m
 Pin a group:
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     topic: ship   # or party, comic, sunny, game, sticker, yeah
 ```
@@ -356,7 +356,7 @@ Real comments already landed on
 and
 [molecare-desktop #26](https://github.com/MoleCare/molecare-desktop/pull/26#issuecomment-5559101123).
 
-**How.** Pin `@v1.9.0` on the default branch (see [Install](#install)).
+**How.** Pin `@v1.10.0` on the default branch (see [Install](#install)).
 Leave `topic` unset (or `topic: title`) to pick from the PR title.
 Set `topic: auto` for a random theme, seeded by the pull request
 number. Pin `topic: comic` when you want the same mood every time.
@@ -428,7 +428,7 @@ Cheer on the default branch.
 [readme-contributors](https://github.com/YauhenBichel/readme-contributors).
 
 To be listed, merge a celebrate workflow that
-`uses: YauhenBichel/merge-cheer@v1.9.0` on the default branch.
+`uses: YauhenBichel/merge-cheer@v1.10.0` on the default branch.
 
 ## Topics
 
@@ -518,7 +518,7 @@ before `qa`. `feat: add python client` still ships.
 | `rating` | `g` | Giphy rating when a key is set |
 
 ```yaml
-- uses: YauhenBichel/merge-cheer@v1.9.0
+- uses: YauhenBichel/merge-cheer@v1.10.0
   with:
     topic: welcome
     giphy-api-key: ${{ secrets.GIPHY_API_KEY }}
@@ -557,7 +557,7 @@ python3 -m unittest discover -s tests -q
 
 ## Publish a release
 
-Current release is `v1.9.0`. `@v1` now moves with each 1.x release, so
+Current release is `v1.10.0`. `@v1` now moves with each 1.x release, so
 pinning it follows the line rather than freezing on the first tag. Listed on the [GitHub Marketplace](https://github.com/marketplace/actions/merge-cheer).
 A reviewed Release is tests plus a human review — see [RELEASE.md](RELEASE.md).
 Pushing a tag does not publish. Later releases update the existing listing.

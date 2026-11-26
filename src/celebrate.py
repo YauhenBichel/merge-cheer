@@ -439,12 +439,12 @@ def action_root() -> Path:
 # Filenames the Action ships. Used when gifs/ is not on disk (GitLab /
 # Bitbucket curl the script only). Keep in sync with scripts/make_gifs.py.
 BUNDLED_GIFS = {
-    "ship": ("ship-it.gif", "alt.gif", "boost.gif"),
-    "fix": ("nailed-it.gif", "alt.gif", "spark.gif"),
+    "ship": ("ship-it.gif", "alt.gif", "boost.gif", "rocket.gif"),
+    "fix": ("nailed-it.gif", "alt.gif", "spark.gif", "wrench.gif"),
     "docs": ("nice-work.gif", "alt.gif", "glow.gif"),
     "tests": ("high-five.gif", "alt.gif"),
     "cleanup": ("cleanup.gif", "alt.gif", "sweep.gif"),
-    "celebration": ("celebration.gif", "alt.gif", "burst.gif"),
+    "celebration": ("celebration.gif", "alt.gif", "burst.gif", "trophy.gif"),
     "welcome": ("high-five.gif", "celebration.gif"),
     "party": ("confetti.gif", "toast.gif"),
     "space": ("planet.gif", "comet.gif"),

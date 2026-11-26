@@ -95,12 +95,12 @@ class CelebrateTest(unittest.TestCase):
         self.assertEqual(picked, everyday)
 
     def test_seasonal_loops_have_real_motion(self) -> None:
-        from PIL import Image
-
+        # Stdlib only (CI has no Pillow): every GIF frame starts with a
+        # graphic control extension, 0x21 0xF9 0x04.
         for group in ("christmas", "newyear"):
             for path in (GIFS / group).glob("*.gif"):
-                with Image.open(path) as image:
-                    self.assertGreaterEqual(image.n_frames, 10, path.name)
+                frames = path.read_bytes().count(b"\x21\xf9\x04")
+                self.assertGreaterEqual(frames, 10, path.name)
 
     def test_comic_has_a_third_gif(self) -> None:
         names = {path.name for path in (GIFS / "comic").glob("*.gif")}

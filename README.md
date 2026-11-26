@@ -564,6 +564,10 @@ The seasonal groups have no still. They are drawn frame by frame
 in [scripts/seasonal_art.py](scripts/seasonal_art.py), so the snow falls
 and the fireworks open instead of one picture pulsing.
 
+`ship/rocket.gif`, `fix/wrench.gif` and `celebration/trophy.gif` are drawn
+the same way, in [scripts/motion_art.py](scripts/motion_art.py), and sit
+next to the pulsing stills of those groups.
+
 ## License
 
 [MIT](LICENSE). The GIFs are original stills animated for this Action.

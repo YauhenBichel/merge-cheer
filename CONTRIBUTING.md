@@ -24,7 +24,8 @@ No Giphy key, no token, and no extra packages for the tests.
 
 ## Rebuild the GIFs
 
-Only if you change `stills/` or `scripts/make_gifs.py`:
+Only if you change `stills/`, `scripts/make_gifs.py` or the drawn scenes
+(`scripts/seasonal_art.py`, `scripts/motion_art.py`):
 
 ```bash
 python3 -m pip install -r requirements-dev.txt

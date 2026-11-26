@@ -49,7 +49,14 @@ GROUPS = (
     "python",
     "cpp",
     "golang",
+    "christmas",
+    "newyear",
 )
+
+# Valid as `topic` and from a title keyword, but never picked by `auto`:
+# a tree in July would be odd. Leaving them out also keeps the `auto`
+# pick for an existing pull request number unchanged.
+SEASONAL_GROUPS = ("christmas", "newyear")
 
 # Extra spellings that resolve to a group. `auto` and `title` are not aliases.
 ALIASES = {
@@ -144,6 +151,14 @@ ALIASES = {
     "golang": "golang",
     "go": "golang",
     "gopher": "golang",
+    "christmas": "christmas",
+    "xmas": "christmas",
+    "x-mas": "christmas",
+    "noel": "christmas",
+    "newyear": "newyear",
+    "new-year": "newyear",
+    "happy-new-year": "newyear",
+    "nye": "newyear",
 }
 
 # Giphy search text when a key is set.
@@ -177,6 +192,8 @@ GIPHY_TAG = {
     "python": "python",
     "cpp": "c++",
     "golang": "golang",
+    "christmas": "merry christmas",
+    "newyear": "happy new year",
 }
 
 # Alt text for the posted image.
@@ -210,6 +227,8 @@ LABEL = {
     "python": "python",
     "cpp": "c++",
     "golang": "golang",
+    "christmas": "merry christmas",
+    "newyear": "happy new year",
 }
 
 FIRST_TIMERS = frozenset({"FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR"})
@@ -218,6 +237,10 @@ FIRST_TIMERS = frozenset({"FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR"})
 # groups so "feat" / "fix" are not stolen. Keep "ship" and "space" off
 # bare substrings ("fellowship", "namespace").
 _TITLE_RULES = (
+    # Seasonal first: rare, and otherwise "new " in "happy new year" goes
+    # to ship.
+    ("christmas", ("christmas", "xmas", "x-mas")),
+    ("newyear", ("new year", "new-year", "newyear")),
     ("fix", ("fix", "bug", "hotfix", "patch", "revert:", "revert ")),
     ("ship", ("feat", "add ", "added", "new ", "launch", "ship:", "ship ", "perf:", "perf ")),
     ("docs", ("doc", "readme")),
@@ -312,7 +335,8 @@ def pick_from_title(title: str, association: str = "", body: str = "") -> str:
 
 def pick_random_group(seed: str = "") -> str:
     """Seeded by PR number when set; otherwise the clock."""
-    return random.Random(seed or None).choice(GROUPS)
+    everyday = tuple(group for group in GROUPS if group not in SEASONAL_GROUPS)
+    return random.Random(seed or None).choice(everyday)
 
 
 def resolve_group(
@@ -376,6 +400,8 @@ BUNDLED_GIFS = {
     "python": ("snake.gif", "coil.gif"),
     "cpp": ("plus.gif", "gear.gif"),
     "golang": ("gopher.gif", "wave.gif"),
+    "christmas": ("tree.gif", "gift.gif"),
+    "newyear": ("fireworks.gif", "clock.gif"),
 }
 
 

@@ -66,6 +66,42 @@ class CelebrateTest(unittest.TestCase):
             names = list((GIFS / group).glob("*.gif"))
             self.assertGreaterEqual(len(names), 2, group)
 
+    def test_seasonal_groups_are_drawn_and_pinned_by_name(self) -> None:
+        celebrate = _load()
+        self.assertEqual(celebrate.SEASONAL_GROUPS, ("christmas", "newyear"))
+        names = {path.name for path in (GIFS / "christmas").glob("*.gif")}
+        self.assertEqual(names, {"tree.gif", "gift.gif"})
+        names = {path.name for path in (GIFS / "newyear").glob("*.gif")}
+        self.assertEqual(names, {"fireworks.gif", "clock.gif"})
+        self.assertEqual(celebrate.resolve_group("chore: bump", "christmas"), "christmas")
+        self.assertEqual(celebrate.resolve_group("chore: bump", "xmas"), "christmas")
+        self.assertEqual(celebrate.resolve_group("chore: bump", "newyear"), "newyear")
+        self.assertEqual(celebrate.resolve_group("chore: bump", "new_year"), "newyear")
+        self.assertEqual(celebrate.resolve_group("chore: bump", "nye"), "newyear")
+
+    def test_seasonal_title_keywords_win_first(self) -> None:
+        celebrate = _load()
+        # "new " alone is a ship keyword; "new year" must not land there.
+        self.assertEqual(celebrate.pick_from_title("chore: happy new year"), "newyear")
+        self.assertEqual(celebrate.pick_from_title("feat: add Christmas banner"), "christmas")
+        self.assertEqual(celebrate.pick_from_title("fix: xmas sale total"), "christmas")
+        self.assertEqual(celebrate.pick_from_title("feat: new login"), "ship")
+
+    def test_auto_never_picks_a_seasonal_group(self) -> None:
+        celebrate = _load()
+        picked = {celebrate.pick_random_group(str(number)) for number in range(1, 2000)}
+        self.assertEqual(picked & set(celebrate.SEASONAL_GROUPS), set())
+        everyday = set(celebrate.GROUPS) - set(celebrate.SEASONAL_GROUPS)
+        self.assertEqual(picked, everyday)
+
+    def test_seasonal_loops_have_real_motion(self) -> None:
+        # Stdlib only (CI has no Pillow): every GIF frame starts with a
+        # graphic control extension, 0x21 0xF9 0x04.
+        for group in ("christmas", "newyear"):
+            for path in (GIFS / group).glob("*.gif"):
+                frames = path.read_bytes().count(b"\x21\xf9\x04")
+                self.assertGreaterEqual(frames, 10, path.name)
+
     def test_comic_has_a_third_gif(self) -> None:
         names = {path.name for path in (GIFS / "comic").glob("*.gif")}
         self.assertEqual(names, {"burst.gif", "pop.gif", "alt.gif"})

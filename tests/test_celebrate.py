@@ -68,7 +68,13 @@ class CelebrateTest(unittest.TestCase):
 
     def test_seasonal_groups_are_drawn_and_pinned_by_name(self) -> None:
         celebrate = _load()
-        self.assertEqual(celebrate.SEASONAL_GROUPS, ("christmas", "newyear"))
+        self.assertEqual(
+            celebrate.SEASONAL_GROUPS,
+            ("christmas", "newyear", "halloween", "hacktoberfest", "birthday"),
+        )
+        for group in celebrate.SEASONAL_GROUPS:
+            self.assertEqual(len(celebrate.BUNDLED_GIFS[group]), 2, group)
+            self.assertEqual(celebrate.resolve_group("chore: bump", group), group)
         names = {path.name for path in (GIFS / "christmas").glob("*.gif")}
         self.assertEqual(names, {"tree.gif", "gift.gif"})
         names = {path.name for path in (GIFS / "newyear").glob("*.gif")}
@@ -97,10 +103,71 @@ class CelebrateTest(unittest.TestCase):
     def test_seasonal_loops_have_real_motion(self) -> None:
         # Stdlib only (CI has no Pillow): every GIF frame starts with a
         # graphic control extension, 0x21 0xF9 0x04.
-        for group in ("christmas", "newyear"):
+        for group in _load().SEASONAL_GROUPS:
             for path in (GIFS / group).glob("*.gif"):
                 frames = path.read_bytes().count(b"\x21\xf9\x04")
                 self.assertGreaterEqual(frames, 10, path.name)
+
+    def test_seasonal_group_follows_the_calendar(self) -> None:
+        import datetime
+
+        celebrate = _load()
+        day = datetime.date
+        pick = celebrate.seasonal_group
+        self.assertEqual(pick(day(2026, 12, 23)), "")
+        self.assertEqual(pick(day(2026, 12, 24)), "christmas")
+        self.assertEqual(pick(day(2026, 12, 26)), "christmas")
+        self.assertEqual(pick(day(2026, 12, 27)), "")
+        self.assertEqual(pick(day(2026, 12, 31)), "newyear")
+        self.assertEqual(pick(day(2027, 1, 1)), "newyear")
+        self.assertEqual(pick(day(2027, 1, 2)), "")
+        self.assertEqual(pick(day(2026, 10, 31)), "halloween")
+        self.assertEqual(pick(day(2026, 7, 14)), "")
+
+    def test_seasonal_birthday_is_the_repository_anniversary(self) -> None:
+        import datetime
+
+        celebrate = _load()
+        born = datetime.date(2024, 3, 9)
+        pick = celebrate.seasonal_group
+        self.assertEqual(pick(datetime.date(2026, 3, 9), "", born), "birthday")
+        self.assertEqual(pick(datetime.date(2024, 3, 9), "", born), "")  # day one
+        self.assertEqual(pick(datetime.date(2026, 3, 10), "", born), "")
+        self.assertEqual(pick(datetime.date(2026, 3, 9)), "")
+        # A fixed holiday wins over a birthday on the same day.
+        xmas = datetime.date(2020, 12, 25)
+        self.assertEqual(pick(datetime.date(2026, 12, 25), "", xmas), "christmas")
+
+    def test_seasonal_hacktoberfest_needs_october_and_the_label(self) -> None:
+        import datetime
+
+        celebrate = _load()
+        pick = celebrate.seasonal_group
+        self.assertEqual(pick(datetime.date(2026, 10, 12), "bug, Hacktoberfest"), "hacktoberfest")
+        self.assertEqual(pick(datetime.date(2026, 10, 12), "hacktoberfest-accepted"), "hacktoberfest")
+        self.assertEqual(pick(datetime.date(2026, 10, 12), "bug"), "")
+        self.assertEqual(pick(datetime.date(2026, 11, 2), "hacktoberfest"), "")
+        self.assertEqual(pick(datetime.date(2026, 10, 31), "hacktoberfest"), "halloween")
+
+    def test_seasonal_input_parsing(self) -> None:
+        import datetime
+
+        celebrate = _load()
+        self.assertTrue(celebrate.seasonal_enabled("true"))
+        self.assertTrue(celebrate.seasonal_enabled(" TRUE "))
+        self.assertFalse(celebrate.seasonal_enabled(""))
+        self.assertFalse(celebrate.seasonal_enabled("false"))
+        self.assertEqual(
+            celebrate.parse_day("2026-12-25T10:11:12Z"), datetime.date(2026, 12, 25)
+        )
+        self.assertIsNone(celebrate.parse_day(""))
+        self.assertIsNone(celebrate.parse_day("soon"))
+
+    def test_action_passes_the_seasonal_inputs(self) -> None:
+        text = (ROOT / "action.yml").read_text(encoding="utf-8")
+        self.assertIn("SEASONAL: ${{ inputs.seasonal }}", text)
+        self.assertIn("PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}", text)
+        self.assertIn("REPO_CREATED_AT: ${{ github.event.repository.created_at }}", text)
 
     def test_comic_has_a_third_gif(self) -> None:
         names = {path.name for path in (GIFS / "comic").glob("*.gif")}
@@ -1874,6 +1941,62 @@ class CelebrateTest(unittest.TestCase):
                     os.environ.pop(key, None)
                 else:
                     os.environ[key] = value
+
+    def _seasonal_main(self, **env: str) -> str:
+        celebrate = _load()
+        keys = (
+            "GITHUB_ACTIONS", "GITLAB_CI", "BITBUCKET_COMMIT", "BITBUCKET_REPO_FULL_NAME",
+            "PR_TITLE", "PR_BODY", "PR_LABELS", "DRY_RUN", "PR_AUTHOR", "PR_AUTHOR_TYPE",
+            "PR_NUMBER", "EVENT_NAME", "PR_MERGED", "REVIEW_STATE", "REVIEW_AUTHOR",
+            "GITHUB_OUTPUT", "GITHUB_TOKEN", "MODEL", "MODEL_API_KEY", "MODEL_BASE_URL",
+            "TOPIC", "SEASONAL", "PR_MERGED_AT", "REPO_CREATED_AT", "MESSAGE",
+        )
+        saved = {key: os.environ.pop(key, None) for key in keys}
+        try:
+            os.environ.update(
+                {
+                    "DRY_RUN": "1",
+                    "GITHUB_ACTIONS": "true",
+                    "EVENT_NAME": "pull_request_target",
+                    "PR_MERGED": "true",
+                    "PR_TITLE": "fix: login",
+                    "PR_AUTHOR": "alice",
+                    "PR_NUMBER": "8",
+                }
+            )
+            os.environ.update(env)
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                self.assertEqual(celebrate.main(), 0)
+            return buf.getvalue()
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+    def test_main_switches_to_the_season_only_when_asked(self) -> None:
+        xmas = "2026-12-25T09:00:00Z"
+        out = self._seasonal_main(SEASONAL="true", PR_MERGED_AT=xmas)
+        self.assertIn("gifs/christmas/", out)
+        self.assertIn("seasonal: christmas for 2026-12-25", out)
+        # Off by default.
+        out = self._seasonal_main(PR_MERGED_AT=xmas)
+        self.assertIn("gifs/fix/", out)
+        # A pinned topic wins.
+        out = self._seasonal_main(SEASONAL="true", PR_MERGED_AT=xmas, TOPIC="python")
+        self.assertIn("gifs/python/", out)
+        # An ordinary day keeps the title pick.
+        out = self._seasonal_main(SEASONAL="true", PR_MERGED_AT="2026-07-14T09:00:00Z")
+        self.assertIn("gifs/fix/", out)
+        # The repository's anniversary.
+        out = self._seasonal_main(
+            SEASONAL="true",
+            PR_MERGED_AT="2026-07-14T09:00:00Z",
+            REPO_CREATED_AT="2024-07-14T18:00:00Z",
+        )
+        self.assertIn("gifs/birthday/", out)
 
     def test_main_skip_logs_for_bot_and_non_cheer(self) -> None:
         celebrate = _load()

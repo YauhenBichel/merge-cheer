@@ -309,11 +309,33 @@ names: `auto`, `title`, `ship`, `fix`, `docs`, `tests`, `cleanup`,
 `celebration`, `welcome`, `party`, `space`, `magic`, `coffee`, `robot`,
 `comic`, `sunny`, `game`, `sticker`, `yeah`, `devops`, `sre`, `qa`,
 `design`, `architecture`, `engineering`, `backend`, `frontend`, `java`,
-`python`, `cpp`, `golang`, `christmas`, `newyear`. An unknown name falls
-back to `celebration` and prints the list.
+`python`, `cpp`, `golang`, `christmas`, `newyear`, `halloween`,
+`hacktoberfest`, `birthday`. An unknown name falls back to `celebration`
+and prints the list.
 
-`christmas` and `newyear` are seasonal: pin them, or put the word in the
-pull request title. `auto` never picks them.
+### Seasons
+
+`christmas`, `newyear`, `halloween`, `hacktoberfest` and `birthday` are
+seasonal. `auto` never picks them. Pin one, put the word in the pull
+request title, or let the calendar do it:
+
+```yaml
+- uses: YauhenBichel/merge-cheer@v1
+  with:
+    seasonal: true
+```
+
+| When (UTC, the day the pull request merged) | Group |
+| --- | --- |
+| 24 to 26 December | `christmas` |
+| 31 December, 1 January | `newyear` |
+| 31 October | `halloween` |
+| The repository's anniversary | `birthday` |
+| October, label `hacktoberfest` or `hacktoberfest-accepted` | `hacktoberfest` |
+
+Off by default. Merges only. A pinned `topic` always wins. On GitLab
+and Bitbucket set the variable `SEASONAL=true`; the day is then today's
+date and there is no `birthday`.
 
 ## Live demo
 
@@ -373,6 +395,14 @@ see it move).
 | christmas | christmas | newyear | newyear |
 | --- | --- | --- | --- |
 | ![christmas tree](gifs/christmas/tree.gif) | ![christmas gift](gifs/christmas/gift.gif) | ![new year fireworks](gifs/newyear/fireworks.gif) | ![new year clock](gifs/newyear/clock.gif) |
+
+| halloween | halloween | hacktoberfest | hacktoberfest |
+| --- | --- | --- | --- |
+| ![halloween pumpkin](gifs/halloween/pumpkin.gif) | ![halloween ghost](gifs/halloween/ghost.gif) | ![hacktoberfest leaves](gifs/hacktoberfest/leaves.gif) | ![hacktoberfest branch](gifs/hacktoberfest/branch.gif) |
+
+| birthday | birthday |
+| --- | --- |
+| ![birthday cake](gifs/birthday/cake.gif) | ![birthday balloons](gifs/birthday/balloons.gif) |
 
 This repository dogfoods
 [.github/workflows/celebrate.yml](.github/workflows/celebrate.yml)
@@ -438,6 +468,9 @@ file in the group (stable for a given pull request number).
 | `golang` | `golang`, `gopher` | ![golang](gifs/golang/gopher.gif) |
 | `christmas` | `christmas`, `xmas` | ![christmas](gifs/christmas/tree.gif) |
 | `newyear` | `new year`, `new-year` | ![newyear](gifs/newyear/fireworks.gif) |
+| `halloween` | `halloween`, `spooky` | ![halloween](gifs/halloween/pumpkin.gif) |
+| `hacktoberfest` | `hacktoberfest` | ![hacktoberfest](gifs/hacktoberfest/branch.gif) |
+| `birthday` | `birthday`, `anniversary` | ![birthday](gifs/birthday/cake.gif) |
 
 `welcome` also wins on `topic: title` when GitHub marks the author
 `FIRST_TIME_CONTRIBUTOR` or `FIRST_TIMER` and the title did not match
@@ -446,7 +479,7 @@ The comment adds `First contribution — welcome.` for those authors.
 
 Conventional title types (`fix`, `feat`, `docs`, `test`, `refactor`)
 win before mood keywords, so `feat: add party mode` still ships. The
-two seasonal groups are the exception and win first, so
+seasonal groups are the exception and win first, so
 `chore: happy new year` gets fireworks.
 
 Aliases: `launch` → `ship`, `nailed-it` → `fix`, `nice-work` → `docs`,
@@ -459,7 +492,8 @@ Aliases: `launch` → `ship`, `nailed-it` → `fix`, `nice-work` → `docs`,
 `ux` / `figma` → `design`, `arch` → `architecture`, `swe` → `engineering`,
 `js` / `react` → `frontend`, `jdk` → `java`, `py` → `python`,
 `c++` → `cpp`, `go` / `gopher` → `golang`, `xmas` / `noel` → `christmas`,
-`new-year` / `nye` → `newyear`.
+`new-year` / `nye` → `newyear`, `spooky` → `halloween`,
+`hacktober` → `hacktoberfest`, `anniversary` / `bday` → `birthday`.
 
 `javascript` does not match `java`. Conventional `test` / `ci` still win
 before `qa`. `feat: add python client` still ships.
@@ -545,7 +579,7 @@ may hold several files; `alt.gif` is the same still with the pulse
 inverted. Mood groups (`party`, `space`, `magic`, `coffee`, `robot`, `comic`,
 `sunny`, `game`, `sticker`, `yeah`) each ship two original stills.
 
-`christmas` and `newyear` have no still. They are drawn frame by frame
+The seasonal groups have no still. They are drawn frame by frame
 in [scripts/seasonal_art.py](scripts/seasonal_art.py), so the snow falls
 and the fireworks open instead of one picture pulsing.
 

@@ -57,6 +57,25 @@ jobs:
       - uses: YauhenBichel/merge-cheer@v1.9.0
 ```
 
+### From 2 December 2026: allow `pull_request_target`
+
+GitHub blocks `pull_request_target` by default in public repositories
+from 2 December 2026
+([changelog](https://github.blog/changelog/2026-11-02-pull_request_target-blocked-by-default-december-2/)).
+Without an opt-in, this workflow stops running and merges get no
+comment. There is no flag for it in the workflow file.
+
+To keep it: **Settings → Actions → Rules**, add an Actions event policy
+that allows `pull_request_target`
+([how to](https://docs.github.com/en/actions/how-tos/administer/control-workflow-execution)).
+The list is an allowlist, so include every event your other workflows
+use (`push`, `pull_request`, `schedule`, `release`, ...).
+
+Why it is safe here: the Action never checks out or runs pull request
+code, and the job only has `pull-requests: write`. Plain `pull_request`
+is not a replacement: fork pull requests get a read-only token, so
+outside contributors would get no comment.
+
 ### Use your own GIFs and a note
 
 On merge, pin your GIFs. `note` is an extra line after the thank-you

@@ -4,37 +4,35 @@ A Marketplace-facing Release is **tests plus a human review**. Pushing a
 tag does not publish anything. GitHub also cannot tick the Marketplace
 box through the API — this workflow only creates the GitHub Release.
 
-## One-time: review environment
+## The review gate
 
-The `release` job uses `environment: marketplace`. That name does
-nothing until a required reviewer exists.
+The `release` job uses `environment: marketplace`. That environment is
+set up, under [Settings → Environments](https://github.com/YauhenBichel/merge-cheer/settings/environments):
 
-1. Open [Settings → Environments](https://github.com/YauhenBichel/merge-cheer/settings/environments)
-2. Create an environment named **`marketplace`** (exact spelling)
-3. Enable **Required reviewers** and add at least one person
-4. Save
+- **Required reviewers**: the repository owner. The job waits until the
+  owner clicks Approve.
+- **Self-review is allowed**. There is one reviewer, so the person who
+  starts the run is also the one who approves it.
+- **Admin bypass is off**. Nobody can skip the wait.
 
-Until that Settings click, the job will not wait for Approve.
+If the `release` job ever publishes without waiting, check these three
+settings first.
 
 ## Cut a reviewed release
 
 Land the work on the default branch. Wait until **CI / test** is green
 on the commit you intend to ship. Then tag that commit. Semver only
-(`vMAJOR.MINOR.PATCH`). Do not force-move `v1`.
+(`vMAJOR.MINOR.PATCH`): a new input or topic is a minor version, a fix
+is a patch.
 
 ```
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.10.0
+git push origin v1.10.0
 ```
-
-`v1` is the first tag on this repository, not a floating major this
-workflow maintains. Consumers may keep `uses: YauhenBichel/merge-cheer@v1`
-only if a human later chooses to move that tag. Never `git tag -f v1`
-from automation.
 
 1. Actions → **Release** → Run workflow
 2. Use the default branch (or the tag itself)
-3. Version input: `v1.2.0` (leading `v`, three numbers)
+3. Version input: `v1.10.0` (leading `v`, three numbers)
 4. The **test** job checks out that tag and runs
    `python3 -m unittest discover -s tests -q`
 5. If tests fail, stop. Nothing is published.
@@ -43,6 +41,31 @@ from automation.
 7. The job creates the GitHub Release for that tag, or updates notes if
    the Release already exists (safe to re-run). `action.yml` is not an
    asset — the tag **is** the Action version.
+8. The **docker** job pushes the pipe image for that tag to Docker Hub.
+
+## After the release
+
+Three steps follow every release. None of them is automated.
+
+1. **Move `v1`.** `uses: YauhenBichel/merge-cheer@v1` follows the 1.x
+   line only because a person moves the tag after each release:
+
+   ```
+   git tag --force v1 v1.10.0^{commit}
+   git push --force origin refs/tags/v1
+   ```
+
+   The Release workflow never moves `v1`, and no other automation may.
+   Do this only after the Release run is green.
+2. **Point the docs at the new version.** Replace the old version with
+   the new one in the README, `docs/`, `examples/`, `templates/`,
+   `pipe.yml`, `MARKETPLACES.md`, this file and the tests that check
+   them, and open a pull request.
+3. **Bump the pipe image tag.** `pipe.yml` names the Docker image
+   without the leading `v` (`eugenebichel/merge-cheer:1.10.0`), so a
+   search for `v1.10.0` does not find it. Change it in `pipe.yml`,
+   `MARKETPLACES.md`, `examples/bitbucket-pipelines.yml` and
+   `tests/test_celebrate.py`, in the same pull request as step 2.
 
 ## Marketplace
 

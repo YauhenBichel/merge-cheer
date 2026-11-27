@@ -533,6 +533,35 @@ Most merge-GIF actions need a Giphy key and post whatever the API
 returns. Merge Cheer works on a new repository with zero secrets, and
 the fallback is a set of owned looping GIFs — not a pixel parrot.
 
+## FAQ
+
+### How do I stop it commenting on one pull request?
+
+Add the label `no-cheer` or `skip-cheer`, or put `no-cheer` or `[skip cheer]`
+in the title. Bot-authored pull requests are skipped by the example workflow.
+
+### Does it send my data anywhere?
+
+By default it calls only the GitHub API (to read the pull request and post one
+comment). The comment links a GIF hosted in this repository. Two things are optional and off
+until you set them. With `giphy-api-key`, it asks Giphy for a GIF. With `model`
+and `model-api-key`, it sends the pull request title, a short excerpt of the
+body, the author names and up to 20 changed file names to the model endpoint you
+chose, to write one thank-you line.
+
+### Does it need a Giphy key?
+
+No. Without a key it uses the GIF groups that ship with the Action.
+
+### Can it merge, approve or push?
+
+No. It only comments. It does not check out the pull request.
+
+### How is it different from other merge-GIF Actions?
+
+See the section above: no Giphy key is needed, and the fallback GIFs are owned
+by this project.
+
 ## Security
 
 - The title is read from an environment variable, not interpolated into a shell.
